@@ -181,6 +181,81 @@ class TestUFCWebsiteScraper():
         "Conor McGregor",
         "Jon Jones"
     ])
+    def test_scrape_fight_metrics(self, athlete_name):
+        scraper = ufc_scraper.UFCWebsiteScraper()
+        soup = self.get_soup(athlete_name)
+        scraped_fight_metrics = scraper.scrape_fight_metrics(soup)
+
+        khabib_fight_metrics = {'significant_strikes_landed_per_min': '4.10',
+                                'significant_strikes_absorbed_per_min': '1.75',
+                                'takedown_average_per_15_min': '5.32',
+                                'submission_average_per_15_min': '0.79',
+                                'significant_strike_defense': '65%',
+                                'takedown_defense': '85%',
+                                'knockdown_ratio': '0.17',
+                                'average_fight_time': '13:13',
+                                'significant_strikes_by_position_standing': '298',
+                                'significant_strikes_by_position_clinch': '27',
+                                'significant_strikes_by_position_ground': '380',
+                                'significant_strikes_by_target_head': '604',
+                                'significant_strikes_by_target_body': '65',
+                                'significant_strikes_by_target_leg': '36',
+                                'win_by_way_knockout' : '8',
+                                'win_by_way_decision': '10',
+                                'win_by_way_submission':'11'}
+
+        mcgregor_fight_metrics = {'significant_strikes_landed_per_min': '5.32',
+                                    'significant_strikes_absorbed_per_min': '4.66',
+                                    'takedown_average_per_15_min': '0.67',
+                                    'submission_average_per_15_min': '0.13',
+                                    'significant_strike_defense': '54%',
+                                    'takedown_defense': '67%',
+                                    'knockdown_ratio': '1.73',
+                                    'average_fight_time': '08:02',
+                                    'significant_strikes_by_position_standing': '461',
+                                    'significant_strikes_by_position_clinch': '61',
+                                    'significant_strikes_by_position_ground': '77',
+                                    'significant_strikes_by_target_head': '419',
+                                    'significant_strikes_by_target_body': '102',
+                                    'significant_strikes_by_target_leg': '78',
+                                    'win_by_way_knockout' : '19',
+                                    'win_by_way_decision': '2',
+                                    'win_by_way_submission':'1'}
+
+        jones_fight_metrics = {'significant_strikes_landed_per_min': '4.30',
+                                'significant_strikes_absorbed_per_min': '2.22',
+                                'takedown_average_per_15_min': '1.85',
+                                'submission_average_per_15_min': '0.44',
+                                'significant_strike_defense': '64%',
+                                'takedown_defense': '95%',
+                                'knockdown_ratio': '0.22',
+                                'average_fight_time': '15:28',
+                                'significant_strikes_by_position_standing': '953',
+                                'significant_strikes_by_position_clinch': '248',
+                                'significant_strikes_by_position_ground': '262',
+                                'significant_strikes_by_target_head': '687',
+                                'significant_strikes_by_target_body': '359',
+                                'significant_strikes_by_target_leg': '417',
+                                'win_by_way_knockout' : '10',
+                                'win_by_way_decision': '7',
+                                'win_by_way_submission':'6'}
+
+        if athlete_name == 'Khabib Nurmagomedov':
+            assert len(scraped_fight_metrics) == len(khabib_fight_metrics)
+            assert scraped_fight_metrics == khabib_fight_metrics
+        elif athlete_name == 'Conor McGregor':
+            assert len(scraped_fight_metrics) == len(mcgregor_fight_metrics)
+            assert scraped_fight_metrics == mcgregor_fight_metrics
+        elif athlete_name == 'Jon Jones':
+            assert len(scraped_fight_metrics) == len(jones_fight_metrics)
+            assert scraped_fight_metrics == jones_fight_metrics
+
+
+    @pytest.mark.parametrize("athlete_name", [
+        "Khabib Nurmagomedov",
+        "Conor McGregor",
+        "Jon Jones"
+    ])
     def test_scrape_athelete_stats(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
         scraped_stats = scraper.scrape_athelete_stats(athlete_name)
@@ -202,7 +277,24 @@ class TestUFCWebsiteScraper():
                         'significant_strike_accuracy': '49%',
                         'takedowns_landed': '49',
                         'takedowns_attempted': '127',
-                        'takedown_accuracy': '48%'}
+                        'takedown_accuracy': '48%',
+                        'significant_strikes_landed_per_min': '4.10',
+                        'significant_strikes_absorbed_per_min': '1.75',
+                        'takedown_average_per_15_min': '5.32',
+                        'submission_average_per_15_min': '0.79',
+                        'significant_strike_defense': '65%',
+                        'takedown_defense': '85%',
+                        'knockdown_ratio': '0.17',
+                        'average_fight_time': '13:13',
+                        'significant_strikes_by_position_standing': '298',
+                        'significant_strikes_by_position_clinch': '27',
+                        'significant_strikes_by_position_ground': '380',
+                        'significant_strikes_by_target_head': '604',
+                        'significant_strikes_by_target_body': '65',
+                        'significant_strikes_by_target_leg': '36',
+                        'win_by_way_knockout' : '8',
+                        'win_by_way_decision': '10',
+                        'win_by_way_submission':'11'}
 
         mcgregor_stats = {'name': 'Conor McGregor',
                         'record': '22-6-0 (W-L-D)',
@@ -221,7 +313,24 @@ class TestUFCWebsiteScraper():
                         'significant_strike_accuracy': '50%',
                         'takedowns_landed': '',
                         'takedowns_attempted': '9',
-                        'takedown_accuracy': '56%'}
+                        'takedown_accuracy': '56%',
+                        'significant_strikes_landed_per_min': '5.32',
+                        'significant_strikes_absorbed_per_min': '4.66',
+                        'takedown_average_per_15_min': '0.67',
+                        'submission_average_per_15_min': '0.13',
+                        'significant_strike_defense': '54%',
+                        'takedown_defense': '67%',
+                        'knockdown_ratio': '1.73',
+                        'average_fight_time': '08:02',
+                        'significant_strikes_by_position_standing': '461',
+                        'significant_strikes_by_position_clinch': '61',
+                        'significant_strikes_by_position_ground': '77',
+                        'significant_strikes_by_target_head': '419',
+                        'significant_strikes_by_target_body': '102',
+                        'significant_strikes_by_target_leg': '78',
+                        'win_by_way_knockout' : '19',
+                        'win_by_way_decision': '2',
+                        'win_by_way_submission':'1'}
 
         jones_stats = {'name': 'Jon Jones',
                         'nickname': 'Bones',
@@ -239,7 +348,24 @@ class TestUFCWebsiteScraper():
                         'significant_strike_accuracy': '58%',
                         'takedowns_landed': '36',
                         'takedowns_attempted': '95',
-                        'takedown_accuracy': '44%'}
+                        'takedown_accuracy': '44%',
+                        'significant_strikes_landed_per_min': '4.30',
+                        'significant_strikes_absorbed_per_min': '2.22',
+                        'takedown_average_per_15_min': '1.85',
+                        'submission_average_per_15_min': '0.44',
+                        'significant_strike_defense': '64%',
+                        'takedown_defense': '95%',
+                        'knockdown_ratio': '0.22',
+                        'average_fight_time': '15:28',
+                        'significant_strikes_by_position_standing': '953',
+                        'significant_strikes_by_position_clinch': '248',
+                        'significant_strikes_by_position_ground': '262',
+                        'significant_strikes_by_target_head': '687',
+                        'significant_strikes_by_target_body': '359',
+                        'significant_strikes_by_target_leg': '417',
+                        'win_by_way_knockout' : '10',
+                        'win_by_way_decision': '7',
+                        'win_by_way_submission':'6'}
 
         if athlete_name == 'Khabib Nurmagomedov':
             assert len(scraped_stats) == len(khabib_stats)
