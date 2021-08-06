@@ -1,7 +1,6 @@
-from typing import DefaultDict
+import bs4
 import pandas as pd
 import requests
-import bs4
 
 
 class UFCWebsiteScraper():
@@ -92,7 +91,7 @@ class UFCWebsiteScraper():
         compiled_statistics = dict()
         compiled_statistics['significant_strikes_landed'] = significant_strikes_landed
         compiled_statistics['significant_strikes_attempted'] = significant_strikes_attempted
-        compiled_statistics['signicant_strike_accuracy'] = significant_strike_accuracy
+        compiled_statistics['significant_strike_accuracy'] = significant_strike_accuracy
 
         return compiled_statistics
 
@@ -115,7 +114,7 @@ class UFCWebsiteScraper():
         compiled_statistics = dict()
         compiled_statistics['takedowns_landed'] = takedowns_landed
         compiled_statistics['takedowns_attempted'] = takedowns_attempted
-        compiled_statistics['takedowns_accuracy'] = takedowns_accuracy
+        compiled_statistics['takedown_accuracy'] = takedowns_accuracy
 
         return compiled_statistics
 
@@ -154,15 +153,15 @@ class UFCWebsiteScraper():
 
 def main():
     ufc_scraper = UFCWebsiteScraper()
-    athlete = "Khabib Nurmagomedov"
-    stats1 = ufc_scraper.scrape_athelete_stats(athlete)
+    compiled_stats = []
+    athletes= ["Khabib Nurmagomedov", "Conor McGregor", 
+                "Jon Jones", "Kamaru Usman", 
+                "Georges St-Pierre", "Anderson Silva"]
 
-    athlete2 = "Jon Jones"
-    stats2 = ufc_scraper.scrape_athelete_stats(athlete2)
+    for athlete in athletes:
+        compiled_stats.append(ufc_scraper.scrape_athelete_stats(athlete))
 
-    compiled_stats = [stats1, stats2]
     ufc_scraper.export_to_excel(compiled_stats)
-
 
 
 if __name__ == "__main__":
