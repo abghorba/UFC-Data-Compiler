@@ -115,6 +115,28 @@ class TestUFCWebsiteScraper():
         "Conor McGregor",
         "Jon Jones"
     ])
+    def test_scrape_athlete_ranking(self, athlete_name):
+        scraper = ufc_scraper.UFCWebsiteScraper()
+        soup = self.get_soup(athlete_name)
+        scraped_ranking = scraper.scrape_athlete_ranking(soup)
+
+        khabib_ranking = 'Former Fighter'
+        mcgregor_ranking = '#9 Lightweight Division'
+        jones_ranking = 'Light Heavyweight Champion'
+
+        if athlete_name == 'Khabib Nurmagomedov':
+            assert scraped_ranking == khabib_ranking
+        elif athlete_name == 'Conor McGregor':
+            assert scraped_ranking == mcgregor_ranking
+        elif athlete_name == 'Jon Jones':
+            assert scraped_ranking == jones_ranking
+
+
+    @pytest.mark.parametrize("athlete_name", [
+        "Khabib Nurmagomedov",
+        "Conor McGregor",
+        "Jon Jones"
+    ])
     def test_scrape_striking_accuracy(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
         soup = self.get_soup(athlete_name)
@@ -157,7 +179,7 @@ class TestUFCWebsiteScraper():
                                     'takedowns_attempted': '127',
                                     'takedown_accuracy': '48%'}
 
-        mcgregor_grappling_stats = {'takedowns_landed': '',
+        mcgregor_grappling_stats = {'takedowns_landed': '0',
                                     'takedowns_attempted': '9',
                                     'takedown_accuracy': '56%'}
 
@@ -190,7 +212,7 @@ class TestUFCWebsiteScraper():
                                 'significant_strikes_absorbed_per_min': '1.75',
                                 'takedown_average_per_15_min': '5.32',
                                 'submission_average_per_15_min': '0.79',
-                                'significant_strike_defense': '65%',
+                                'significant_strikes_defense': '65%',
                                 'takedown_defense': '85%',
                                 'knockdown_ratio': '0.17',
                                 'average_fight_time': '13:13',
@@ -208,7 +230,7 @@ class TestUFCWebsiteScraper():
                                     'significant_strikes_absorbed_per_min': '4.66',
                                     'takedown_average_per_15_min': '0.67',
                                     'submission_average_per_15_min': '0.13',
-                                    'significant_strike_defense': '54%',
+                                    'significant_strikes_defense': '54%',
                                     'takedown_defense': '67%',
                                     'knockdown_ratio': '1.73',
                                     'average_fight_time': '08:02',
@@ -226,7 +248,7 @@ class TestUFCWebsiteScraper():
                                 'significant_strikes_absorbed_per_min': '2.22',
                                 'takedown_average_per_15_min': '1.85',
                                 'submission_average_per_15_min': '0.44',
-                                'significant_strike_defense': '64%',
+                                'significant_strikes_defense': '64%',
                                 'takedown_defense': '95%',
                                 'knockdown_ratio': '0.22',
                                 'average_fight_time': '15:28',
@@ -263,6 +285,7 @@ class TestUFCWebsiteScraper():
         khabib_stats = {'name': 'Khabib Nurmagomedov',
                         'record': '29-0-0 (W-L-D)',
                         'nickname': 'The Eagle',
+                        'ranking': "Former Fighter",
                         'status': 'Retired',
                         'hometown': 'Dagestan Republic, Russia',
                         'trains_at': 'AKA (American Kickboxing Academy) San Jose',
@@ -282,7 +305,7 @@ class TestUFCWebsiteScraper():
                         'significant_strikes_absorbed_per_min': '1.75',
                         'takedown_average_per_15_min': '5.32',
                         'submission_average_per_15_min': '0.79',
-                        'significant_strike_defense': '65%',
+                        'significant_strikes_defense': '65%',
                         'takedown_defense': '85%',
                         'knockdown_ratio': '0.17',
                         'average_fight_time': '13:13',
@@ -299,6 +322,7 @@ class TestUFCWebsiteScraper():
         mcgregor_stats = {'name': 'Conor McGregor',
                         'record': '22-6-0 (W-L-D)',
                         'nickname': 'The Notorious',
+                        'ranking': '#9 Lightweight Division',
                         'status': 'Active',
                         'hometown': 'Dublin, Ireland',
                         'trains_at': 'SBG Ireland',
@@ -311,14 +335,14 @@ class TestUFCWebsiteScraper():
                         'significant_strikes_landed': '599',
                         'significant_strikes_attempted': '1204',
                         'significant_strike_accuracy': '50%',
-                        'takedowns_landed': '',
+                        'takedowns_landed': '0',
                         'takedowns_attempted': '9',
                         'takedown_accuracy': '56%',
                         'significant_strikes_landed_per_min': '5.32',
                         'significant_strikes_absorbed_per_min': '4.66',
                         'takedown_average_per_15_min': '0.67',
                         'submission_average_per_15_min': '0.13',
-                        'significant_strike_defense': '54%',
+                        'significant_strikes_defense': '54%',
                         'takedown_defense': '67%',
                         'knockdown_ratio': '1.73',
                         'average_fight_time': '08:02',
@@ -335,6 +359,7 @@ class TestUFCWebsiteScraper():
         jones_stats = {'name': 'Jon Jones',
                         'nickname': 'Bones',
                         'record': '26-1-0 (W-L-D)',
+                        'ranking': 'Light Heavyweight Champion',
                         'status': 'Active',
                         'hometown': 'Rochester, United States',
                         'age': '33',
@@ -353,7 +378,7 @@ class TestUFCWebsiteScraper():
                         'significant_strikes_absorbed_per_min': '2.22',
                         'takedown_average_per_15_min': '1.85',
                         'submission_average_per_15_min': '0.44',
-                        'significant_strike_defense': '64%',
+                        'significant_strikes_defense': '64%',
                         'takedown_defense': '95%',
                         'knockdown_ratio': '0.22',
                         'average_fight_time': '15:28',
