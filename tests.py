@@ -19,7 +19,8 @@ class TestUFCWebsiteScraper():
     @pytest.mark.parametrize("athlete_name", [
         "Khabib Nurmagomedov",
         "Conor McGregor",
-        "Jon Jones"
+        "Jon Jones",
+        "Andrew Ghorbani"
     ])
     def test_scrape_athelete_biography(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
@@ -55,6 +56,15 @@ class TestUFCWebsiteScraper():
                         'reach': '84.50',
                         'leg_reach': '45.00'}
 
+        andrew_bio = {'status': '',
+                        'hometown': '',
+                        'age': '',
+                        'height': '',
+                        'weight': '',
+                        'octagon_debut': '',
+                        'reach': '',
+                        'leg_reach': ''}
+
         if athlete_name == 'Khabib Nurmagomedov':
             assert len(scraped_bio) == len(khabib_bio)
             assert scraped_bio == khabib_bio
@@ -64,12 +74,16 @@ class TestUFCWebsiteScraper():
         elif athlete_name == 'Jon Jones':
             assert len(scraped_bio) == len(jones_bio)
             assert scraped_bio == jones_bio
+        else:
+            assert len(scraped_bio) == len(andrew_bio)
+            assert scraped_bio == andrew_bio
 
 
     @pytest.mark.parametrize("athlete_name", [
         "Khabib Nurmagomedov",
         "Conor McGregor",
-        "Jon Jones"
+        "Jon Jones",
+        "Andrew Ghorbani"
     ])
     def test_scrape_athlete_nickname(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
@@ -79,6 +93,7 @@ class TestUFCWebsiteScraper():
         khabib_nickname = 'The Eagle'
         mcgregor_nickname = 'The Notorious'
         jones_nickname = 'Bones'
+        andrew_nickname = ''
 
         if athlete_name == 'Khabib Nurmagomedov':
             assert scraped_nickname == khabib_nickname
@@ -86,12 +101,15 @@ class TestUFCWebsiteScraper():
             assert scraped_nickname == mcgregor_nickname
         elif athlete_name == 'Jon Jones':
             assert scraped_nickname == jones_nickname
+        else:
+            assert scraped_nickname == andrew_nickname
 
 
     @pytest.mark.parametrize("athlete_name", [
         "Khabib Nurmagomedov",
         "Conor McGregor",
-        "Jon Jones"
+        "Jon Jones",
+        "Andrew Ghorbani"
     ])
     def test_scrape_athlete_record(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
@@ -101,6 +119,7 @@ class TestUFCWebsiteScraper():
         khabib_record = '29-0-0 (W-L-D)'
         mcgregor_record = '22-6-0 (W-L-D)'
         jones_record = '26-1-0 (W-L-D)'
+        andrew_record = ''
 
         if athlete_name == 'Khabib Nurmagomedov':
             assert scraped_record == khabib_record
@@ -108,12 +127,15 @@ class TestUFCWebsiteScraper():
             assert scraped_record == mcgregor_record
         elif athlete_name == 'Jon Jones':
             assert scraped_record == jones_record
+        else:
+            assert scraped_record == andrew_record
 
 
     @pytest.mark.parametrize("athlete_name", [
         "Khabib Nurmagomedov",
         "Conor McGregor",
-        "Jon Jones"
+        "Jon Jones",
+        "Andrew Ghorbani"
     ])
     def test_scrape_athlete_ranking(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
@@ -123,6 +145,7 @@ class TestUFCWebsiteScraper():
         khabib_ranking = 'Former Fighter'
         mcgregor_ranking = '#9 Lightweight Division'
         jones_ranking = 'Light Heavyweight Champion'
+        andrew_ranking = ''
 
         if athlete_name == 'Khabib Nurmagomedov':
             assert scraped_ranking == khabib_ranking
@@ -130,12 +153,15 @@ class TestUFCWebsiteScraper():
             assert scraped_ranking == mcgregor_ranking
         elif athlete_name == 'Jon Jones':
             assert scraped_ranking == jones_ranking
+        else:
+            assert scraped_ranking == andrew_ranking
 
 
     @pytest.mark.parametrize("athlete_name", [
         "Khabib Nurmagomedov",
         "Conor McGregor",
-        "Jon Jones"
+        "Jon Jones",
+        "Andrew Ghorbani"
     ])
     def test_scrape_striking_accuracy(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
@@ -154,6 +180,10 @@ class TestUFCWebsiteScraper():
                                     'significant_strikes_attempted': '2526',
                                     'significant_strike_accuracy': '58%'}
 
+        andrew_striking_stats = {'significant_strikes_landed': '0',
+                                    'significant_strikes_attempted': '0',
+                                    'significant_strike_accuracy': '0'}
+
         if athlete_name == 'Khabib Nurmagomedov':
             assert len(scraped_striking_stats) == len(khabib_striking_stats)
             assert scraped_striking_stats == khabib_striking_stats
@@ -163,12 +193,16 @@ class TestUFCWebsiteScraper():
         elif athlete_name == 'Jon Jones':
             assert len(scraped_striking_stats) == len(jones_striking_stats)
             assert scraped_striking_stats == jones_striking_stats
+        else:
+            assert len(scraped_striking_stats) == len(andrew_striking_stats)
+            assert scraped_striking_stats == andrew_striking_stats
 
 
     @pytest.mark.parametrize("athlete_name", [
         "Khabib Nurmagomedov",
         "Conor McGregor",
-        "Jon Jones"
+        "Jon Jones",
+        "Andrew Ghorbani"
     ])
     def test_scrape_grappling_accuracy(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
@@ -186,6 +220,10 @@ class TestUFCWebsiteScraper():
         jones_grappling_stats = {'takedowns_landed': '36',
                                     'takedowns_attempted': '95',
                                     'takedown_accuracy': '44%'}
+    
+        andrew_grappling_stats = {'takedowns_landed': '0',
+                                    'takedowns_attempted': '0',
+                                    'takedown_accuracy': '0'}
 
         if athlete_name == 'Khabib Nurmagomedov':
             assert len(scraped_grappling_stats) == len(khabib_grappling_stats)
@@ -196,12 +234,16 @@ class TestUFCWebsiteScraper():
         elif athlete_name == 'Jon Jones':
             assert len(scraped_grappling_stats) == len(jones_grappling_stats)
             assert scraped_grappling_stats == jones_grappling_stats
+        else:
+            assert len(scraped_grappling_stats) == len(andrew_grappling_stats)
+            assert scraped_grappling_stats == andrew_grappling_stats
 
 
     @pytest.mark.parametrize("athlete_name", [
         "Khabib Nurmagomedov",
         "Conor McGregor",
-        "Jon Jones"
+        "Jon Jones",
+        "Andrew Ghorbani"
     ])
     def test_scrape_fight_metrics(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
@@ -262,6 +304,24 @@ class TestUFCWebsiteScraper():
                                 'win_by_way_decision': '7',
                                 'win_by_way_submission':'6'}
 
+        andrew_fight_metrics = {'significant_strikes_landed_per_min': '0',
+                                'significant_strikes_absorbed_per_min': '0',
+                                'takedown_average_per_15_min': '0',
+                                'submission_average_per_15_min': '0',
+                                'significant_strikes_defense': '0',
+                                'takedown_defense': '0',
+                                'knockdown_ratio': '0',
+                                'average_fight_time': '0:00',
+                                'significant_strikes_by_position_standing': '0',
+                                'significant_strikes_by_position_clinch': '0',
+                                'significant_strikes_by_position_ground': '0',
+                                'significant_strikes_by_target_head': '0',
+                                'significant_strikes_by_target_body': '0',
+                                'significant_strikes_by_target_leg': '0',
+                                'win_by_way_knockout' : '0',
+                                'win_by_way_decision': '0',
+                                'win_by_way_submission':'0'}
+
         if athlete_name == 'Khabib Nurmagomedov':
             assert len(scraped_fight_metrics) == len(khabib_fight_metrics)
             assert scraped_fight_metrics == khabib_fight_metrics
@@ -271,12 +331,16 @@ class TestUFCWebsiteScraper():
         elif athlete_name == 'Jon Jones':
             assert len(scraped_fight_metrics) == len(jones_fight_metrics)
             assert scraped_fight_metrics == jones_fight_metrics
+        else:
+            assert len(scraped_fight_metrics) == len(andrew_fight_metrics)
+            assert scraped_fight_metrics == andrew_fight_metrics
 
 
     @pytest.mark.parametrize("athlete_name", [
         "Khabib Nurmagomedov",
         "Conor McGregor",
-        "Jon Jones"
+        "Jon Jones",
+        "Andrew Ghorbani"
     ])
     def test_scrape_athelete_stats(self, athlete_name):
         scraper = ufc_scraper.UFCWebsiteScraper()
@@ -392,6 +456,42 @@ class TestUFCWebsiteScraper():
                         'win_by_way_decision': '7',
                         'win_by_way_submission':'6'}
 
+        andrew_stats = {'name': 'Andrew Ghorbani',
+                        'nickname': '',
+                        'record': '',
+                        'ranking': '',
+                        'status': '',
+                        'hometown': '',
+                        'age': '',
+                        'height': '',
+                        'weight': '',
+                        'octagon_debut': '',
+                        'reach': '',
+                        'leg_reach': '',
+                        'significant_strikes_landed': '0',
+                        'significant_strikes_attempted': '0',
+                        'significant_strike_accuracy': '0',
+                        'takedowns_landed': '0',
+                        'takedowns_attempted': '0',
+                        'takedown_accuracy': '0',
+                        'significant_strikes_landed_per_min': '0',
+                        'significant_strikes_absorbed_per_min': '0',
+                        'takedown_average_per_15_min': '0',
+                        'submission_average_per_15_min': '0',
+                        'significant_strikes_defense': '0',
+                        'takedown_defense': '0',
+                        'knockdown_ratio': '0',
+                        'average_fight_time': '0:00',
+                        'significant_strikes_by_position_standing': '0',
+                        'significant_strikes_by_position_clinch': '0',
+                        'significant_strikes_by_position_ground': '0',
+                        'significant_strikes_by_target_head': '0',
+                        'significant_strikes_by_target_body': '0',
+                        'significant_strikes_by_target_leg': '0',
+                        'win_by_way_knockout' : '0',
+                        'win_by_way_decision': '0',
+                        'win_by_way_submission':'0'}
+
         if athlete_name == 'Khabib Nurmagomedov':
             assert len(scraped_stats) == len(khabib_stats)
             assert scraped_stats == khabib_stats
@@ -401,3 +501,6 @@ class TestUFCWebsiteScraper():
         elif athlete_name == 'Jon Jones':
             assert len(scraped_stats) == len(jones_stats)
             assert scraped_stats == jones_stats
+        else:
+            assert len(scraped_stats) == len(andrew_stats)
+            assert scraped_stats == andrew_stats

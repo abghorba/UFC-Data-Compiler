@@ -1,6 +1,7 @@
 import bs4
 import pandas as pd
 import requests
+import time
 
 
 class UFCWebsiteScraper():
@@ -18,7 +19,7 @@ class UFCWebsiteScraper():
 
         """
         data = pd.DataFrame(athlete_statistics)
-        data.to_excel('stats.xlsx', engine='xlsxwriter')
+        data.to_excel('ufc_fighter_stats.xlsx', engine='xlsxwriter')
 
 
     def scrape_ufc_rankings_to_txt_file(self):
@@ -36,32 +37,29 @@ class UFCWebsiteScraper():
         soup = bs4.BeautifulSoup(html_content, 'html.parser')
 
         # Open the file we will write to
-        file = open('fighters.txt', 'w')
+        with open('ufc_rankings.txt', 'w') as file:
 
-        # Look at each grouping of rankings
-        groupings = soup.find_all(class_='view-grouping')
-        # Iterate through each grouping
-        for grouping in groupings:
-            if isinstance(grouping, bs4.element.Tag):
-                division = grouping.find(class_='view-grouping-header').get_text()
-                # Exclude the pound-for-pound ranking and women's featherweight
-                if division not in {"Pound-for-Pound Top Rank", "Women's Featherweight"}:
-                    # Get the division's champion's name and clean the text
-                    champion = grouping.find(class_='info')
-                    champion = champion.find(class_='views-row').get_text().strip()
-                    # Write the champion into file
-                    file.write(champion + "\n")
+            # Look at each grouping of rankings
+            groupings = soup.find_all(class_='view-grouping')
+            # Iterate through each grouping
+            for grouping in groupings:
+                if isinstance(grouping, bs4.element.Tag):
+                    division = grouping.find(class_='view-grouping-header').get_text()
+                    # Exclude the pound-for-pound ranking and women's featherweight
+                    if division not in {"Pound-for-Pound Top Rank", "Women's Featherweight"}:
+                        # Get the division's champion's name and clean the text
+                        champion = grouping.find(class_='info')
+                        champion = champion.find(class_='views-row').get_text().strip()
+                        # Write the champion into file
+                        file.write(champion + "\n")
 
-                    # Get the top 15 fighters in the current division
-                    top_15 = grouping.find_all(class_='views-field views-field-title')
-                    for fighter in top_15:
-                        # Get the top 15 fighter's name and clean the text
-                        contender = fighter.find(class_='views-row').get_text().strip()
-                        # Write the contender into file
-                        file.write(contender + "\n")
-
-        # Close the file
-        file.close()
+                        # Get the top 15 fighters in the current division
+                        top_15 = grouping.find_all(class_='views-field views-field-title')
+                        for fighter in top_15:
+                            # Get the top 15 fighter's name and clean the text
+                            contender = fighter.find(class_='views-row').get_text().strip()
+                            # Write the contender into file
+                            file.write(contender + "\n")
 
 
     def scrape_athlete_biography(self, soup):
@@ -76,14 +74,34 @@ class UFCWebsiteScraper():
         # Initialize the dictionary
         compiled_stats = dict()
 
-        biography = soup.find(class_='c-bio__info-details')
-        for child in biography.children:
-            if isinstance(child, bs4.element.Tag):
-                bio_fields = child.findAll(class_='c-bio__field')
-                for field in bio_fields:
-                    label = field.find(class_='c-bio__label').get_text().lower().replace(" ", "_")
-                    entry = field.find(class_='c-bio__text').get_text().replace("\n", "")
-                    compiled_stats[label] = entry
+        try:
+            biography = soup.find(class_='c-bio__info-details')
+
+            if biography is None:
+                raise AttributeError()
+
+            # Iterate through each child element   
+            for child in biography.children:
+                if isinstance(child, bs4.element.Tag):
+                    bio_fields = child.findAll(class_='c-bio__field')
+                    # Clean and gather data in each entry
+                    for field in bio_fields:
+                        label = field.find(class_='c-bio__label').get_text().lower().replace(" ", "_")
+                        entry = field.find(class_='c-bio__text').get_text().replace("\n", "")
+                        compiled_stats[label] = entry
+
+        except AttributeError:
+            # There is no biography section.
+            compiled_stats.update(
+                {'status': '',
+                    'hometown': '',
+                    'age': '',
+                    'height': '',
+                    'weight': '',
+                    'octagon_debut': '',
+                    'reach': '',
+                    'leg_reach': ''}
+            )
 
         return compiled_stats
 
@@ -100,10 +118,11 @@ class UFCWebsiteScraper():
         try:
             nickname = soup.find(class_='field field-name-nickname').get_text()
             nickname = nickname.replace("\"", "")
-            return nickname
-        except:
+        except AttributeError:
             # Athlete does not have a nickname
-            return ""
+            nickname = ""
+
+        return nickname
 
 
     def scrape_athlete_record(self, soup):
@@ -119,10 +138,11 @@ class UFCWebsiteScraper():
             record = soup.find(class_='c-hero__headline-suffix tz-change-inner').get_text()
             record = record.strip().split("\n")
             record = record[-1].strip()
-            return record
-        except:
+        except AttributeError:
             # Athlete does not have a record
-            return ""
+            record = ""
+        
+        return record
 
 
     def scrape_athlete_ranking(self, soup):
@@ -142,10 +162,11 @@ class UFCWebsiteScraper():
                 cleaned_ranking.append(line.strip())
             ranking = ' '.join(cleaned_ranking)
             ranking = ranking.split('•')[0].strip()
-            return ranking
-        except:
+        except AttributeError:
             # Athlete does not have a ranking
-            return ""
+            ranking = ""
+
+        return ranking
 
 
     def scrape_striking_accuracy(self, soup):
@@ -169,7 +190,7 @@ class UFCWebsiteScraper():
 
                 # If the athlete detail card is not for Striking Accuracy, then it does not exist
                 if striking_accuracy_html.find(class_='c-overlap--stats__title').get_text().lower().strip() != "striking accuracy":
-                    raise Exception()
+                    raise AttributeError()
 
             # Gather the striking statistics
             significant_strike_accuracy = striking_accuracy_html.find(class_='e-chart-circle__percent').get_text()
@@ -181,16 +202,16 @@ class UFCWebsiteScraper():
             compiled_statistics['significant_strikes_landed'] = significant_strikes_landed if significant_strikes_landed else '0'
             compiled_statistics['significant_strikes_attempted'] = significant_strikes_attempted if significant_strikes_attempted else '0'
             compiled_statistics['significant_strike_accuracy'] = significant_strike_accuracy if significant_strike_accuracy else '0'
-
-            return compiled_statistics
         
-        except:
+        except AttributeError:
             # The Striking Accuracy detail card does not exist
-            compiled_statistics['significant_strikes_landed'] = '0'
-            compiled_statistics['significant_strikes_attempted'] = '0'
-            compiled_statistics['significant_strike_accuracy'] = '0'
+            compiled_statistics.update(
+                 {'significant_strikes_landed': '0',
+                    'significant_strikes_attempted': '0',
+                    'significant_strike_accuracy': '0'}
+            )
             
-            return compiled_statistics
+        return compiled_statistics
 
 
     def scrape_grappling_accuracy(self, soup):
@@ -214,7 +235,7 @@ class UFCWebsiteScraper():
 
                 # If the athlete detail card is not for Grappling Accuracy, then it does not exist
                 if grappling_accuracy_html.find(class_='c-overlap--stats__title').get_text().lower().strip() != "grappling accuracy":
-                    raise Exception()
+                    raise AttributeError()
 
             # Gather the takedown statistics
             takedown_accuracy = grappling_accuracy_html.find(class_='e-chart-circle__percent').get_text()
@@ -226,16 +247,17 @@ class UFCWebsiteScraper():
             compiled_statistics['takedowns_landed'] = takedowns_landed if takedowns_landed else '0'
             compiled_statistics['takedowns_attempted'] = takedowns_attempted if takedowns_attempted else '0'
             compiled_statistics['takedown_accuracy'] = takedown_accuracy if takedown_accuracy else '0'
-
-            return compiled_statistics
         
-        except:
+        except AttributeError:
             # The Grappling Accuracy detail card does not exist
-            compiled_statistics['takedowns_landed'] = '0'
-            compiled_statistics['takedowns_attempted'] = '0'
-            compiled_statistics['takedown_accuracy'] = '0'
+
+            compiled_statistics.update(
+                {'takedowns_landed': '0',
+                    'takedowns_attempted': '0',
+                    'takedown_accuracy': '0'}
+            )
             
-            return compiled_statistics
+        return compiled_statistics
 
 
     def scrape_fight_metrics(self, soup):
@@ -247,8 +269,10 @@ class UFCWebsiteScraper():
             :returns: dict
         
         """
+        # Initialize the dictionary
+        compiled_statistics = dict()
+
         try:
-            compiled_statistics = dict()
             fight_metric_html = soup.find(class_='l-container__content--narrow stats-records__outer-container')
 
             # Get all the rows of metrics that have 2 columns
@@ -268,10 +292,10 @@ class UFCWebsiteScraper():
                             # Extract the relevant information and clean the data
                             label = metric_section.find(class_='c-stat-compare__label').get_text()
                             label = label.lower().replace('sig. str.', 'significant strikes').replace('avg', 'average').replace(' ', '_')
-                            try:
-                                stat = metric_section.find(class_='c-stat-compare__number').get_text().replace('\n', '').replace(' ', '')
-                            except:
-                                stat = '0'
+
+                            #Try to get the following stat, otherwise assign a 0
+                            stat_html = metric_section.find(class_='c-stat-compare__number')
+                            stat = stat_html.get_text().replace('\n', '').replace(' ', '') if stat_html else '0'
 
                             # Append label suffix if it exists
                             label_suffix = metric_section.find(class_='c-stat-compare__label-suffix')
@@ -329,10 +353,29 @@ class UFCWebsiteScraper():
                                 # Insert into our dictionary
                                 compiled_statistics[full_label] = stat
 
-            return compiled_statistics
+        except AttributeError:
 
-        except:
-            return dict()
+            compiled_statistics.update(
+                {'significant_strikes_landed_per_min': '0',
+                    'significant_strikes_absorbed_per_min': '0',
+                    'takedown_average_per_15_min': '0',
+                    'submission_average_per_15_min': '0',
+                    'significant_strikes_defense': '0',
+                    'takedown_defense': '0',
+                    'knockdown_ratio': '0',
+                    'average_fight_time': '0:00',
+                    'significant_strikes_by_position_standing': '0',
+                    'significant_strikes_by_position_clinch': '0',
+                    'significant_strikes_by_position_ground': '0',
+                    'significant_strikes_by_target_head': '0',
+                    'significant_strikes_by_target_body': '0',
+                    'significant_strikes_by_target_leg': '0',
+                    'win_by_way_knockout' : '0',
+                    'win_by_way_decision': '0',
+                    'win_by_way_submission':'0'}
+            )
+
+        return compiled_statistics
 
 
     def scrape_athelete_stats(self, athlete_name):
@@ -348,14 +391,11 @@ class UFCWebsiteScraper():
         athlete_statistics = dict()
         athlete_statistics['name'] = athlete_name
 
-        # Get the athlete's name in the format required
-        athlete_name = athlete_name.lower().replace(" ", "-")
-
         # Get the html of the athlete's page on the UFC website
-        url = self.BASE_URL + athlete_name
+        url = self.BASE_URL + athlete_name.lower().replace(" ", "-")
         page = requests.get(url)
         if page.status_code != 200:
-            return athlete_statistics
+            print(f'{athlete_name} not found!')
         html_content = page.text
         soup = bs4.BeautifulSoup(html_content, 'html.parser')
 
@@ -367,22 +407,30 @@ class UFCWebsiteScraper():
         athlete_statistics.update(self.scrape_striking_accuracy(soup))
         athlete_statistics.update(self.scrape_grappling_accuracy(soup))
         athlete_statistics.update(self.scrape_fight_metrics(soup))
-        athlete_statistics.update(self.scrape_fight_metrics(soup))
 
         return athlete_statistics 
 
 
 def main():
+    start_time = time.time()
     ufc_scraper = UFCWebsiteScraper()
+
+    print("Updating file ufc_rankings.txt . . .")
     ufc_scraper.scrape_ufc_rankings_to_txt_file()
+    print("Update complete!")
 
-    file = open('fighters.txt', 'r')
+    print("Scraping each fighter from the rankings . . .")
+    with open('ufc_rankings.txt', 'r') as file:
+        compiled_stats = []
+        for line in file:
+            compiled_stats.append(ufc_scraper.scrape_athelete_stats(line.strip()))
 
-    compiled_stats = []
-    for line in file:
-        compiled_stats.append(ufc_scraper.scrape_athelete_stats(line.strip()))
-
+    print("Finished! Exporting to Excel . . .")
     ufc_scraper.export_to_excel(compiled_stats)
+    print("Export complete! Please open ufc_fighter_stats.xlsx to view data.")
+    
+    program_time = round(time.time() - start_time, 2)
+    print(f"---------- {program_time} seconds ----------")
 
 
 if __name__ == "__main__":
