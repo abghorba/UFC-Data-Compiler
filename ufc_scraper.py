@@ -1,7 +1,6 @@
 import bs4
 import pandas as pd
 import requests
-import time
 
 
 class UFCWebsiteScraper():
@@ -11,12 +10,16 @@ class UFCWebsiteScraper():
 
     def export_to_excel(self, athlete_statistics):
         """
-            Exports the compiled data into an Excel file.
+        Exports the compiled data into an Excel file.
+        
+        Parameters
+        ----------
+        athlete_statisitcs : dict
+            Compiled statistics of athlete data.
 
-            :param athlete_statisitcs: Compiled statistics of athlete data.
-            :type athlete_statisitcs: dict
-            :returns: None
-
+        Returns
+        -------
+        None
         """
         data = pd.DataFrame(athlete_statistics)
         data.to_excel('ufc_fighter_stats.xlsx', engine='xlsxwriter')
@@ -24,11 +27,17 @@ class UFCWebsiteScraper():
 
     def scrape_ufc_rankings_to_txt_file(self):
         """
-            Scrapes the UFC rankings website to write into a txt file
-            the fighters that we will collect data on.
+        Scrapes the UFC rankings website to write
+        the names of fighters listed on the webpage
+        into a .txt file.
 
-            :returns: None
-        
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
         """
         # Get the html for the rankings website
         url = 'https://www.ufc.com/rankings'
@@ -64,15 +73,21 @@ class UFCWebsiteScraper():
 
     def scrape_athlete_biography(self, soup):
         """
-            Scrapes the athlete's biography.
+        Scrapes and parses the athlete's biography
+        section from their webpage.
 
-            :param soup: The html of the UFC athlete's page
-            :type soup: BeautifulSoup
-            :returns: dict
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            The html of the UFC athlete's webpage.
 
+        Returns
+        -------
+        compiled_statistics: dict
+            A dictionary with the scraped statistics.
         """
         # Initialize the dictionary
-        compiled_stats = dict()
+        compiled_statistics = dict()
 
         try:
             biography = soup.find(class_='c-bio__info-details')
@@ -88,11 +103,11 @@ class UFCWebsiteScraper():
                     for field in bio_fields:
                         label = field.find(class_='c-bio__label').get_text().lower().replace(" ", "_")
                         entry = field.find(class_='c-bio__text').get_text().replace("\n", "")
-                        compiled_stats[label] = entry
+                        compiled_statistics[label] = entry
 
         except AttributeError:
             # There is no biography section.
-            compiled_stats.update(
+            compiled_statistics.update(
                 {'status': '',
                     'hometown': '',
                     'age': '',
@@ -103,17 +118,23 @@ class UFCWebsiteScraper():
                     'leg_reach': ''}
             )
 
-        return compiled_stats
+        return compiled_statistics
 
 
     def scrape_athlete_nickname(self, soup):
         """
-            Scrapes the athlete's nickname.
+        Scrapes and parses the athlete's nickname 
+        from their webpage.
 
-            :param soup: The html of the UFC athlete's page
-            :type soup: BeautifulSoup
-            :returns: str of the athlete's nickname
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            The html of the UFC athlete's webpage.
 
+        Returns
+        -------
+        nickname : str
+            The athlete's nickname.
         """
         try:
             nickname = soup.find(class_='field field-name-nickname').get_text()
@@ -127,12 +148,18 @@ class UFCWebsiteScraper():
 
     def scrape_athlete_record(self, soup):
         """
-            Scrapes the athlete's record.
+        Scrapes and parses the athlete's fight 
+        record from their webpage.
 
-            :param soup: The html of the UFC athlete's page
-            :type soup: BeautifulSoup
-            :returns: str of the athlete's record
-        
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            The html of the UFC athlete's webpage.
+
+        Returns
+        -------
+        record : str
+            The athlete's fight record.
         """
         try:
             record = soup.find(class_='c-hero__headline-suffix tz-change-inner').get_text()
@@ -147,12 +174,18 @@ class UFCWebsiteScraper():
 
     def scrape_athlete_ranking(self, soup):
         """
-            Scrapes the athlete's ranking.
+        Scrapes and parses the athlete's ranking
+        from their webpage.
 
-            :param soup: The html of the UFC athlete's page
-            :type soup: BeautifulSoup
-            :returns: str of the athlete's record
-        
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            The html of the UFC athlete's webpage.
+
+        Returns
+        -------
+        ranking : str
+            The athlete's UFC ranking.
         """
         try:
             ranking = soup.find(class_='c-hero__headline-suffix tz-change-inner').get_text()
@@ -171,12 +204,18 @@ class UFCWebsiteScraper():
 
     def scrape_striking_accuracy(self, soup):
         """
-            Scrapes the athlete's striking accuracy.
+        Scrapes and extracts the athlete's striking
+        accuracy from their webpage.
 
-            :param soup: The html of the UFC athlete's page
-            :type soup: BeautifulSoup
-            :returns: dict
-        
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            The html of the UFC athlete's webpage.
+
+        Returns
+        -------
+        compiled_statistics : dict
+            The athlete's compiled striking statistics.     
         """
         #Initialize the dictionary
         compiled_statistics = dict()
@@ -216,12 +255,18 @@ class UFCWebsiteScraper():
 
     def scrape_grappling_accuracy(self, soup):
         """
-            Scrapes the athlete's grappling accuracy.
+        Scrapes and extracts the athlete's grappling
+        accuracy from their webpage.
 
-            :param soup: The html of the UFC athlete's page
-            :type soup: BeautifulSoup
-            :returns: dict
-        
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            The html of the UFC athlete's webpage.
+
+        Returns
+        -------
+        compiled_statistics : dict
+            The athlete's compiled grappling statistics.          
         """
         #Initialize the dictionary
         compiled_statistics = dict()
@@ -262,12 +307,18 @@ class UFCWebsiteScraper():
 
     def scrape_fight_metrics(self, soup):
         """
-            Scrapes the athlete's fight metrics.
+        Scrapes and extracts the athlete's fight
+        metrics from their webpage.
 
-            :param soup: The html of the UFC athlete's page
-            :type soup: BeautifulSoup
-            :returns: dict
-        
+        Parameters
+        ----------
+        soup : BeautifulSoup
+            The html of the UFC athlete's webpage.
+
+        Returns
+        -------
+        compiled_statistics : dict
+            The athlete's compiled fight statistics.
         """
         # Initialize the dictionary
         compiled_statistics = dict()
@@ -380,13 +431,18 @@ class UFCWebsiteScraper():
 
     def scrape_athelete_stats(self, athlete_name):
         """
-            Driver function to scrape the athlete's stats from
-            the UFC website.
+        Driver function to scrape, extract, and clean the
+        various athletes' statistics from their webpage,
 
-            :param athlete_name: The name of the athlete.
-            :type athlete_name: str
-            :returns: dict of the athlete's stats
-        
+        Parameters
+        ----------
+        athlete_name : str
+            The string containing the athlete's name.
+
+        Returns
+        -------
+        athlete_statistics : dict
+            The athlete's compiled fighter statistics.        
         """
         athlete_statistics = dict()
         athlete_statistics['name'] = athlete_name
@@ -409,29 +465,3 @@ class UFCWebsiteScraper():
         athlete_statistics.update(self.scrape_fight_metrics(soup))
 
         return athlete_statistics 
-
-
-def main():
-    start_time = time.time()
-    ufc_scraper = UFCWebsiteScraper()
-
-    print("Updating file ufc_rankings.txt . . .")
-    ufc_scraper.scrape_ufc_rankings_to_txt_file()
-    print("Update complete!")
-
-    print("Scraping each fighter from the rankings . . .")
-    with open('ufc_rankings.txt', 'r') as file:
-        compiled_stats = []
-        for line in file:
-            compiled_stats.append(ufc_scraper.scrape_athelete_stats(line.strip()))
-
-    print("Finished! Exporting to Excel . . .")
-    ufc_scraper.export_to_excel(compiled_stats)
-    print("Export complete! Please open ufc_fighter_stats.xlsx to view data.")
-    
-    program_time = round(time.time() - start_time, 2)
-    print(f"---------- {program_time} seconds ----------")
-
-
-if __name__ == "__main__":
-    main() 
