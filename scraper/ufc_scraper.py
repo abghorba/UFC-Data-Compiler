@@ -1,27 +1,31 @@
 import bs4
+import logging
+import os
 import pandas as pd
 import requests
+
+from datetime import datetime
 
 
 class UFCWebsiteScraper:
     def __init__(self):
         self.BASE_URL = "https://www.ufc.com/athlete/"
+        self.current_datetime = datetime.now().strftime("%d%m%Y%H%M%S")
 
     def export_to_excel(self, athlete_statistics):
         """
         Exports the compiled data into an Excel file.
 
-        Parameters
-        ----------
-        athlete_statisitcs : dict
-            Compiled statistics of athlete data.
-
-        Returns
-        -------
-        None
+        :param athlete_statisitcs : Dict containing the compiled statistics of athlete data
+        :param filename: Name of the Excel file to create
+        :return: Filepath of .xlsx file as a string
         """
+
+        excel_filepath = os.getcwd() + f"/fighter_stats/{self.current_datetime}-data.xlsx"
         data = pd.DataFrame(athlete_statistics)
-        data.to_excel("ufc_fighter_stats.xlsx", engine="xlsxwriter")
+        data.to_excel(excel_filepath, engine="xlsxwriter")
+
+        return excel_filepath
 
     def scrape_ufc_rankings_to_txt_file(self):
         """
@@ -29,37 +33,41 @@ class UFCWebsiteScraper:
         the names of fighters listed on the webpage
         into a .txt file.
 
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        None
+        :return: Filepath of .txt file as a string
         """
+
         # Get the html for the rankings website
         url = "https://www.ufc.com/rankings"
         page = requests.get(url)
+        logging.info(page.status_code)
         html_content = page.text
         soup = bs4.BeautifulSoup(html_content, "html.parser")
 
         # Open the file we will write to
-        with open("ufc_rankings.txt", "w") as file:
+        text_filepath = os.getcwd() + f"/fighter_stats/{self.current_datetime}-rankings.txt"
+
+        with open(text_filepath, "w") as file:
 
             # Look at each grouping of rankings
             groupings = soup.find_all(class_="view-grouping")
+
             # Iterate through each grouping
             for grouping in groupings:
+
                 if isinstance(grouping, bs4.element.Tag):
+
                     division = grouping.find(class_="view-grouping-header").get_text()
+
                     # Exclude the pound-for-pound ranking and women's featherweight
                     if division not in {
                         "Pound-for-Pound Top Rank",
                         "Women's Featherweight",
                     }:
+
                         # Get the division's champion's name and clean the text
                         champion = grouping.find(class_="info")
                         champion = champion.find(class_="views-row").get_text().strip()
+
                         # Write the champion into file
                         file.write(champion + "\n")
 
@@ -67,33 +75,35 @@ class UFCWebsiteScraper:
                         top_15 = grouping.find_all(
                             class_="views-field views-field-title"
                         )
+
                         for fighter in top_15:
+
                             # Get the top 15 fighter's name and clean the text
                             contender = (
                                 fighter.find(class_="views-row").get_text().strip()
                             )
+
                             # Write the contender into file
                             file.write(contender + "\n")
+        
+        logging.info(f"Scraped UFC Rankings to {text_filepath}")
+
+        return text_filepath
 
     def scrape_athlete_biography(self, soup):
         """
         Scrapes and parses the athlete's biography
         section from their webpage.
 
-        Parameters
-        ----------
-        soup : BeautifulSoup
-            The html of the UFC athlete's webpage.
-
-        Returns
-        -------
-        compiled_statistics: dict
-            A dictionary with the scraped statistics.
+        :param: BeautifulSoup object containing html of the UFC athlete's webpage
+        :return: compiled_statistics: Dict with the scraped statistics.
         """
+
         # Initialize the dictionary
         compiled_statistics = dict()
 
         try:
+
             biography = soup.find(class_="c-bio__info-details")
 
             if biography is None:
@@ -101,8 +111,11 @@ class UFCWebsiteScraper:
 
             # Iterate through each child element
             for child in biography.children:
+
                 if isinstance(child, bs4.element.Tag):
+
                     bio_fields = child.findAll(class_="c-bio__field")
+
                     # Clean and gather data in each entry
                     for field in bio_fields:
                         label = (
@@ -119,7 +132,8 @@ class UFCWebsiteScraper:
                         compiled_statistics[label] = entry
 
         except AttributeError:
-            # There is no biography section.
+
+            logging.info("Athlete does not have a biography section.")
             compiled_statistics.update(
                 {
                     "status": "",
@@ -140,21 +154,18 @@ class UFCWebsiteScraper:
         Scrapes and parses the athlete's nickname
         from their webpage.
 
-        Parameters
-        ----------
-        soup : BeautifulSoup
-            The html of the UFC athlete's webpage.
-
-        Returns
-        -------
-        nickname : str
-            The athlete's nickname.
+        :param soup: BeautifulSoup object containing the html of the UFC athlete's webpage
+        :return: The athlete's nickname as a string
         """
+
         try:
+
             nickname = soup.find(class_="field field-name-nickname").get_text()
             nickname = nickname.replace('"', "")
+
         except AttributeError:
-            # Athlete does not have a nickname
+
+            logging.info("Athlete does not have a nickname")
             nickname = ""
 
         return nickname
@@ -164,24 +175,22 @@ class UFCWebsiteScraper:
         Scrapes and parses the athlete's fight
         record from their webpage.
 
-        Parameters
-        ----------
-        soup : BeautifulSoup
-            The html of the UFC athlete's webpage.
-
-        Returns
-        -------
-        record : str
-            The athlete's fight record.
+        :param soup: BeautifulSoup object containing the html of the UFC athlete's webpage
+        :return: The athlete's fight record as a string
         """
+
         try:
+
             record = soup.find(
                 class_="c-hero__headline-suffix tz-change-inner"
             ).get_text()
+
             record = record.strip().split("\n")
             record = record[-1].strip()
+
         except AttributeError:
-            # Athlete does not have a record
+
+            logging.info("Athlete does not have a record.")
             record = ""
 
         return record
@@ -191,28 +200,27 @@ class UFCWebsiteScraper:
         Scrapes and parses the athlete's ranking
         from their webpage.
 
-        Parameters
-        ----------
-        soup : BeautifulSoup
-            The html of the UFC athlete's webpage.
-
-        Returns
-        -------
-        ranking : str
-            The athlete's UFC ranking.
+        :param soup: BeautifulSoup object containing the html of the UFC athlete's webpage
+        :return: The athlete's UFC ranking as a string
         """
+
         try:
+
             ranking = soup.find(
                 class_="c-hero__headline-suffix tz-change-inner"
             ).get_text()
             ranking = ranking.strip().split("\n")
             cleaned_ranking = []
+
             for line in ranking:
                 cleaned_ranking.append(line.strip())
+
             ranking = " ".join(cleaned_ranking)
             ranking = ranking.split("•")[0].strip()
+
         except AttributeError:
-            # Athlete does not have a ranking
+
+            logging.info("Athlete does not have a ranking")
             ranking = ""
 
         return ranking
@@ -222,24 +230,20 @@ class UFCWebsiteScraper:
         Scrapes and extracts the athlete's striking
         accuracy from their webpage.
 
-        Parameters
-        ----------
-        soup : BeautifulSoup
-            The html of the UFC athlete's webpage.
-
-        Returns
-        -------
-        compiled_statistics : dict
-            The athlete's compiled striking statistics.
+        :param soup: BeautifulSoup object containing the html of the UFC athlete's webpage
+        :return: Dict containing athlete's compiled striking statistics
         """
+
         # Initialize the dictionary
         compiled_statistics = dict()
 
         try:
+
             striking_accuracy_html = soup.find(class_="l-overlap-group__item--odd")
 
             # Case when there is only one athlete detail card
             if not striking_accuracy_html:
+
                 striking_accuracy_html = soup.find(
                     class_="l-overlap-group__item--odd--full-width"
                 )
@@ -264,19 +268,22 @@ class UFCWebsiteScraper:
             significant_strikes_landed = significant_strikes[0].get_text()
             significant_strikes_attempted = significant_strikes[1].get_text()
 
-            # Insert statistics into our dictionary
+            # Insert statistics into dictionary
             compiled_statistics["significant_strikes_landed"] = (
                 significant_strikes_landed if significant_strikes_landed else "0"
             )
+
             compiled_statistics["significant_strikes_attempted"] = (
                 significant_strikes_attempted if significant_strikes_attempted else "0"
             )
+
             compiled_statistics["significant_strike_accuracy"] = (
                 significant_strike_accuracy if significant_strike_accuracy else "0"
             )
 
         except AttributeError:
-            # The Striking Accuracy detail card does not exist
+
+            logging.info("The Striking Accuracy detail card does not exist.")
             compiled_statistics.update(
                 {
                     "significant_strikes_landed": "0",
@@ -292,20 +299,15 @@ class UFCWebsiteScraper:
         Scrapes and extracts the athlete's grappling
         accuracy from their webpage.
 
-        Parameters
-        ----------
-        soup : BeautifulSoup
-            The html of the UFC athlete's webpage.
-
-        Returns
-        -------
-        compiled_statistics : dict
-            The athlete's compiled grappling statistics.
+        :param soup: BeautifulSoup object containing the html of the UFC athlete's webpage
+        :return: Dict containing athlete's compiled grappling statistics.
         """
+
         # Initialize the dictionary
         compiled_statistics = dict()
 
         try:
+
             grappling_accuracy_html = soup.find(class_="l-overlap-group__item--even")
 
             # Case when there is only one athlete detail card
@@ -328,9 +330,11 @@ class UFCWebsiteScraper:
             takedown_accuracy = grappling_accuracy_html.find(
                 class_="e-chart-circle__percent"
             ).get_text()
+
             takedowns = grappling_accuracy_html.find_all(
                 class_="c-overlap__stats-value"
             )
+
             takedowns_landed = takedowns[0].get_text()
             takedowns_attempted = takedowns[1].get_text()
 
@@ -338,16 +342,18 @@ class UFCWebsiteScraper:
             compiled_statistics["takedowns_landed"] = (
                 takedowns_landed if takedowns_landed else "0"
             )
+
             compiled_statistics["takedowns_attempted"] = (
                 takedowns_attempted if takedowns_attempted else "0"
             )
+
             compiled_statistics["takedown_accuracy"] = (
                 takedown_accuracy if takedown_accuracy else "0"
             )
 
         except AttributeError:
-            # The Grappling Accuracy detail card does not exist
 
+            logging.info("The Grappling Accuracy detail card does not exist")
             compiled_statistics.update(
                 {
                     "takedowns_landed": "0",
@@ -363,37 +369,38 @@ class UFCWebsiteScraper:
         Scrapes and extracts the athlete's fight
         metrics from their webpage.
 
-        Parameters
-        ----------
-        soup : BeautifulSoup
-            The html of the UFC athlete's webpage.
-
-        Returns
-        -------
-        compiled_statistics : dict
-            The athlete's compiled fight statistics.
+        :param soup: BeautifulSoup object containing the html of the UFC athlete's webpage
+        :return: Dict containing athlete's compiled fight statistics.
         """
+
         # Initialize the dictionary
         compiled_statistics = dict()
 
         try:
+
             fight_metric_html = soup.find(
                 class_="l-container__content--narrow stats-records__outer-container"
             )
 
             # Get all the rows of metrics that have 2 columns
             metric_rows = fight_metric_html.find_all(class_="c-stats-group-2col")
+
             # Iterate through each row
             for metric_row in metric_rows:
+
                 if isinstance(metric_row, bs4.element.Tag):
+
                     # Get each column in the row
                     metric_columns = metric_row.find_all(class_="c-stat-compare")
+
                     # Iterate through each column in the row
                     for metric_column in metric_columns:
+
                         # Get the left and right section of the column
                         metric_left_section = metric_column.find(
                             class_="c-stat-compare__group-1"
                         )
+
                         metric_right_section = metric_column.find(
                             class_="c-stat-compare__group-2"
                         )
@@ -402,6 +409,7 @@ class UFCWebsiteScraper:
                             metric_left_section,
                             metric_right_section,
                         ]:
+
                             # Extract the relevant information and clean the data
                             label = metric_section.find(
                                 class_="c-stat-compare__label"
@@ -427,6 +435,7 @@ class UFCWebsiteScraper:
                             label_suffix = metric_section.find(
                                 class_="c-stat-compare__label-suffix"
                             )
+
                             if label_suffix is not None:
                                 label_suffix = label_suffix.get_text()
                                 label_suffix = label_suffix.lower().replace(" ", "_")
@@ -437,11 +446,16 @@ class UFCWebsiteScraper:
 
             # Get the last row of metrics that has 3 columns
             last_metric_row = fight_metric_html.find(class_="c-stats-group-3col")
+
             # Iterate through each column in the row
             for metric_column in last_metric_row:
+
                 if isinstance(metric_column, bs4.element.Tag):
+
                     metric_section = metric_column.find(class_="c-stat-3bar")
+
                     if metric_section is None:
+
                         metric_section = metric_column.find(class_="c-stat-body")
 
                         # Extract the relevant information and clean the data
@@ -486,6 +500,7 @@ class UFCWebsiteScraper:
                         compiled_statistics[label + "_leg"] = stat_leg
 
                     else:
+
                         # Extract the relevant information and clean the data
                         label = metric_section.find(
                             class_="c-stat-3bar__title"
@@ -498,8 +513,11 @@ class UFCWebsiteScraper:
                         metric_entries = metric_section.find_all(
                             class_="c-stat-3bar__group"
                         )
+
                         for metric_entry in metric_entries:
+
                             if isinstance(metric_entry, bs4.element.Tag):
+
                                 label_suffix = metric_entry.find(
                                     class_="c-stat-3bar__label"
                                 ).get_text()
@@ -527,6 +545,7 @@ class UFCWebsiteScraper:
 
         except AttributeError:
 
+            logging.info("Athlete does not have fight metrics.")
             compiled_statistics.update(
                 {
                     "significant_strikes_landed_per_min": "0",
@@ -556,24 +575,22 @@ class UFCWebsiteScraper:
         Driver function to scrape, extract, and clean the
         various athletes' statistics from their webpage,
 
-        Parameters
-        ----------
-        athlete_name : str
-            The string containing the athlete's name.
-
-        Returns
-        -------
-        athlete_statistics : dict
-            The athlete's compiled fighter statistics.
+        :param athlete_name: String containing the athlete's name
+        :return: Dict containing athlete's compiled fighter statistics
         """
+
+        logging.info(f"Scraping fighter stats for {athlete_name}")
+
         athlete_statistics = dict()
         athlete_statistics["name"] = athlete_name
 
         # Get the html of the athlete's page on the UFC website
         url = self.BASE_URL + athlete_name.lower().replace(" ", "-")
         page = requests.get(url)
+
         if page.status_code != 200:
-            print(f"{athlete_name} not found!")
+            logging.error(f"{athlete_name} not found!")
+
         html_content = page.text
         soup = bs4.BeautifulSoup(html_content, "html.parser")
 
@@ -585,5 +602,7 @@ class UFCWebsiteScraper:
         athlete_statistics.update(self.scrape_striking_accuracy(soup))
         athlete_statistics.update(self.scrape_grappling_accuracy(soup))
         athlete_statistics.update(self.scrape_fight_metrics(soup))
+
+        logging.info(f"Successfully scraped fighter stats for {athlete_name}!")
 
         return athlete_statistics
