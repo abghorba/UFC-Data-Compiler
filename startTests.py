@@ -19,4 +19,8 @@ logging.basicConfig(level=logging.INFO,
                     handlers=[logging.FileHandler(log_filepath),
                                 logging.StreamHandler()])
 
+# Since we use argparse in ufc_scraper.py we will get a system error
+# unless we clear the arguments here first
+sys.argv = [sys.argv[0]]
+
 pytest.main([os.getcwd() + f"/tests/{test_to_run}.py", "-v"])
