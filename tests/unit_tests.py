@@ -1,10 +1,11 @@
-import scraper.ufc_scraper as ufc_scraper
 import bs4
 import requests
 import pytest
 
+from scraper.ufc_scraper import UFCWebsiteScraper
 
-class TestUFCWebsiteScraper:
+
+class TestUFCWebsiteScraper():
     def get_soup(self, athlete_name):
         athlete_name = athlete_name.lower().replace(" ", "-")
         url = "https://www.ufc.com/athlete/" + athlete_name
@@ -19,14 +20,14 @@ class TestUFCWebsiteScraper:
         ["Khabib Nurmagomedov", "Conor McGregor", "Jon Jones", "Andrew Ghorbani"],
     )
     def test_scrape_athelete_biography(self, athlete_name):
-        scraper = ufc_scraper.UFCWebsiteScraper()
+        scraper = UFCWebsiteScraper()
         soup = self.get_soup(athlete_name)
         scraped_bio = scraper.scrape_athlete_biography(soup)
 
         khabib_bio = {
             "status": "Retired",
             "hometown": "Dagestan Republic, Russia",
-            "trains_at": "AKA (American Kickboxing Academy) San Jose",
+            "trains_at": "American Kickboxing Academy (AKA)",
             "age": "33",
             "height": "70.00",
             "weight": "155.00",
@@ -87,7 +88,7 @@ class TestUFCWebsiteScraper:
         ["Khabib Nurmagomedov", "Conor McGregor", "Jon Jones", "Andrew Ghorbani"],
     )
     def test_scrape_athlete_nickname(self, athlete_name):
-        scraper = ufc_scraper.UFCWebsiteScraper()
+        scraper = UFCWebsiteScraper()
         soup = self.get_soup(athlete_name)
         scraped_nickname = scraper.scrape_athlete_nickname(soup)
 
@@ -110,7 +111,7 @@ class TestUFCWebsiteScraper:
         ["Khabib Nurmagomedov", "Conor McGregor", "Jon Jones", "Andrew Ghorbani"],
     )
     def test_scrape_athlete_record(self, athlete_name):
-        scraper = ufc_scraper.UFCWebsiteScraper()
+        scraper = UFCWebsiteScraper()
         soup = self.get_soup(athlete_name)
         scraped_record = scraper.scrape_athlete_record(soup)
 
@@ -133,12 +134,12 @@ class TestUFCWebsiteScraper:
         ["Khabib Nurmagomedov", "Conor McGregor", "Jon Jones", "Andrew Ghorbani"],
     )
     def test_scrape_athlete_ranking(self, athlete_name):
-        scraper = ufc_scraper.UFCWebsiteScraper()
+        scraper = UFCWebsiteScraper()
         soup = self.get_soup(athlete_name)
         scraped_ranking = scraper.scrape_athlete_ranking(soup)
 
         khabib_ranking = "Former Fighter"
-        mcgregor_ranking = "#9 Lightweight Division"
+        mcgregor_ranking = "#12 Lightweight Division"
         jones_ranking = "Light Heavyweight Champion"
         andrew_ranking = ""
 
@@ -156,7 +157,7 @@ class TestUFCWebsiteScraper:
         ["Khabib Nurmagomedov", "Conor McGregor", "Jon Jones", "Andrew Ghorbani"],
     )
     def test_scrape_striking_accuracy(self, athlete_name):
-        scraper = ufc_scraper.UFCWebsiteScraper()
+        scraper = UFCWebsiteScraper()
         soup = self.get_soup(athlete_name)
         scraped_striking_stats = scraper.scrape_striking_accuracy(soup)
 
@@ -202,7 +203,7 @@ class TestUFCWebsiteScraper:
         ["Khabib Nurmagomedov", "Conor McGregor", "Jon Jones", "Andrew Ghorbani"],
     )
     def test_scrape_grappling_accuracy(self, athlete_name):
-        scraper = ufc_scraper.UFCWebsiteScraper()
+        scraper = UFCWebsiteScraper()
         soup = self.get_soup(athlete_name)
         scraped_grappling_stats = scraper.scrape_grappling_accuracy(soup)
 
@@ -248,7 +249,7 @@ class TestUFCWebsiteScraper:
         ["Khabib Nurmagomedov", "Conor McGregor", "Jon Jones", "Andrew Ghorbani"],
     )
     def test_scrape_fight_metrics(self, athlete_name):
-        scraper = ufc_scraper.UFCWebsiteScraper()
+        scraper = UFCWebsiteScraper()
         soup = self.get_soup(athlete_name)
         scraped_fight_metrics = scraper.scrape_fight_metrics(soup)
 
@@ -350,7 +351,7 @@ class TestUFCWebsiteScraper:
         ["Khabib Nurmagomedov", "Conor McGregor", "Jon Jones", "Andrew Ghorbani"],
     )
     def test_scrape_athelete_stats(self, athlete_name):
-        scraper = ufc_scraper.UFCWebsiteScraper()
+        scraper = UFCWebsiteScraper()
         scraped_stats = scraper.scrape_athelete_stats(athlete_name)
 
         khabib_stats = {
@@ -360,7 +361,7 @@ class TestUFCWebsiteScraper:
             "ranking": "Former Fighter",
             "status": "Retired",
             "hometown": "Dagestan Republic, Russia",
-            "trains_at": "AKA (American Kickboxing Academy) San Jose",
+            "trains_at": "American Kickboxing Academy (AKA)",
             "age": "33",
             "height": "70.00",
             "weight": "155.00",
@@ -396,7 +397,7 @@ class TestUFCWebsiteScraper:
             "name": "Conor McGregor",
             "record": "22-6-0 (W-L-D)",
             "nickname": "The Notorious",
-            "ranking": "#9 Lightweight Division",
+            "ranking": "#12 Lightweight Division",
             "status": "Active",
             "hometown": "Dublin, Ireland",
             "trains_at": "SBG Ireland",

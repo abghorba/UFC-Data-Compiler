@@ -31,6 +31,11 @@ def main():
         compiled_stats = []
 
         for line in file:
+
+            # Skip the line detailing the division
+            if not line.startswith("\t"):
+                continue
+
             compiled_stats.append(ufc_scraper.scrape_athelete_stats(line.strip()))
 
     logging.info("Finished! Exporting to Excel . . .")

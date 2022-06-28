@@ -1,3 +1,4 @@
+import argparse
 import bs4
 import logging
 import os
@@ -5,6 +6,44 @@ import pandas as pd
 import requests
 
 from datetime import datetime
+
+
+DIVISON_MAPPING = {
+    "Flyweight": "flw",
+    "Bantamweight": "bw",
+    "Featherweight": "fw",
+    "Lightweight": "lw",
+    "Welterweight": "ww",
+    "Middleweight": "mw",
+    "Light Heavyweight": "lhw",
+    "Heavyweight": "hw",
+    "Women's Strawweight": "wsw",
+    "Women's Flyweight": "wflw",
+    "Women's Bantamweight": "wbw",
+    "Women's Featherweight": "wfw",
+    "Pound-for-Pound": "p4p",
+}
+
+parser = argparse.ArgumentParser(description='Specify UFC divisions')
+parser.add_argument('-all', help="Pull all divisions", action="store_true")
+parser.add_argument('-flw', help="Flyweight", action="store_true")
+parser.add_argument('-bw', help="Bantamweight", action="store_true")
+parser.add_argument('-fw', help="Featherweight", action="store_true")
+parser.add_argument('-lw', help="Lightweight", action="store_true")
+parser.add_argument('-ww', help="Welterweight", action="store_true")
+parser.add_argument('-mw', help="Middleweight", action="store_true")
+parser.add_argument('-lhw', help="Light Heavyweight", action="store_true")
+parser.add_argument('-hw', help="Heavyweight", action="store_true")
+parser.add_argument('-wsw', help="Women's Strawweight", action="store_true")
+parser.add_argument('-wflw', help="Women's Flyweight", action="store_true")
+parser.add_argument('-wbw', help="Women's Bantamweight", action="store_true")
+# parser.add_argument('-wfw', help="Women's Featherweight", action="store_true")
+# parser.add_argument('-p4p', help="Pound-for-Pound", action="store_true")
+
+args = vars(parser.parse_args())
+
+if not any(args.values()):
+    args["all"] = True
 
 
 class UFCWebsiteScraper:
@@ -58,18 +97,32 @@ class UFCWebsiteScraper:
 
                     division = grouping.find(class_="view-grouping-header").get_text()
 
-                    # Exclude the pound-for-pound ranking and women's featherweight
-                    if division not in {
-                        "Pound-for-Pound Top Rank",
-                        "Women's Featherweight",
-                    }:
+                    # Exclude the pound-for-pound rankings and women's featherweight
+                    if division not in ["Pound-for-Pound Top Rank", "Women's Featherweight"]:
 
-                        # Get the division's champion's name and clean the text
-                        champion = grouping.find(class_="info")
-                        champion = champion.find(class_="views-row").get_text().strip()
+                        # If no command line args specfied, pull all divisions
+                        if not args["all"]:
+                            current_division = DIVISON_MAPPING[division]
+                            
+                            # Capture divisions specified in command line args
+                            if not args[current_division]:
+                                continue
 
-                        # Write the champion into file
-                        file.write(champion + "\n")
+                        division = "".join([division + "\n"])
+                        file.write(division)
+
+                        try:
+                            # Get the division's champion's name and clean the text
+                            champion = grouping.find(class_="info")
+                            champion = champion.find(class_="views-row").get_text().strip()
+
+                            # Write the champion into file
+                            champion = "".join(["\t", champion, "\n"])
+                            file.write(champion)
+                        
+                        except AttributeError:
+                            # There is no active champion!
+                            pass
 
                         # Get the top 15 fighters in the current division
                         top_15 = grouping.find_all(
@@ -84,7 +137,8 @@ class UFCWebsiteScraper:
                             )
 
                             # Write the contender into file
-                            file.write(contender + "\n")
+                            contender = "".join(["\t", contender, "\n"])
+                            file.write(contender)
         
         logging.info(f"Scraped UFC Rankings to {text_filepath}")
 
