@@ -1,6 +1,5 @@
 import argparse
 import bs4
-import logging
 import os
 import pandas as pd
 import requests
@@ -78,7 +77,10 @@ class UFCWebsiteScraper:
         # Get the html for the rankings website
         url = "https://www.ufc.com/rankings"
         page = requests.get(url)
-        logging.info(page.status_code)
+
+        if page.status_code != 200:
+            raise Exception("ERROR: Could not retrieve rankings website")
+
         html_content = page.text
         soup = bs4.BeautifulSoup(html_content, "html.parser")
 
@@ -140,7 +142,7 @@ class UFCWebsiteScraper:
                             contender = "".join(["\t", contender, "\n"])
                             file.write(contender)
         
-        logging.info(f"Scraped UFC Rankings to {text_filepath}")
+        print(f"Scraped UFC Rankings to {text_filepath}")
 
         return text_filepath
 
@@ -187,7 +189,7 @@ class UFCWebsiteScraper:
 
         except AttributeError:
 
-            logging.info("Athlete does not have a biography section.")
+            print("Athlete does not have a biography section.")
             compiled_statistics.update(
                 {
                     "status": "",
@@ -219,7 +221,7 @@ class UFCWebsiteScraper:
 
         except AttributeError:
 
-            logging.info("Athlete does not have a nickname")
+            print("Athlete does not have a nickname")
             nickname = ""
 
         return nickname
@@ -244,7 +246,7 @@ class UFCWebsiteScraper:
 
         except AttributeError:
 
-            logging.info("Athlete does not have a record.")
+            print("Athlete does not have a record.")
             record = ""
 
         return record
@@ -274,7 +276,7 @@ class UFCWebsiteScraper:
 
         except AttributeError:
 
-            logging.info("Athlete does not have a ranking")
+            print("Athlete does not have a ranking")
             ranking = ""
 
         return ranking
@@ -337,7 +339,7 @@ class UFCWebsiteScraper:
 
         except AttributeError:
 
-            logging.info("The Striking Accuracy detail card does not exist.")
+            print("The Striking Accuracy detail card does not exist.")
             compiled_statistics.update(
                 {
                     "significant_strikes_landed": "0",
@@ -407,7 +409,7 @@ class UFCWebsiteScraper:
 
         except AttributeError:
 
-            logging.info("The Grappling Accuracy detail card does not exist")
+            print("The Grappling Accuracy detail card does not exist")
             compiled_statistics.update(
                 {
                     "takedowns_landed": "0",
@@ -599,7 +601,7 @@ class UFCWebsiteScraper:
 
         except AttributeError:
 
-            logging.info("Athlete does not have fight metrics.")
+            print("Athlete does not have fight metrics.")
             compiled_statistics.update(
                 {
                     "significant_strikes_landed_per_min": "0",
@@ -633,7 +635,7 @@ class UFCWebsiteScraper:
         :return: Dict containing athlete's compiled fighter statistics
         """
 
-        logging.info(f"Scraping fighter stats for {athlete_name}")
+        print(f"Scraping fighter stats for {athlete_name}")
 
         athlete_statistics = dict()
         athlete_statistics["name"] = athlete_name
@@ -643,7 +645,7 @@ class UFCWebsiteScraper:
         page = requests.get(url)
 
         if page.status_code != 200:
-            logging.error(f"{athlete_name} not found!")
+            print(f"{athlete_name} not found!")
 
         html_content = page.text
         soup = bs4.BeautifulSoup(html_content, "html.parser")
@@ -657,6 +659,6 @@ class UFCWebsiteScraper:
         athlete_statistics.update(self.scrape_grappling_accuracy(soup))
         athlete_statistics.update(self.scrape_fight_metrics(soup))
 
-        logging.info(f"Successfully scraped fighter stats for {athlete_name}!")
+        print(f"Successfully scraped fighter stats for {athlete_name}!")
 
         return athlete_statistics
