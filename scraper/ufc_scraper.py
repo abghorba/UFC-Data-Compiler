@@ -45,7 +45,8 @@ if not any(args.values()):
     args["all"] = True
 
 
-class UFCWebsiteScraper:
+class UFCWebsiteScraper():
+
     def __init__(self):
         self.BASE_URL = "https://www.ufc.com/athlete/"
         self.current_datetime = datetime.now().strftime("%d%m%Y%H%M%S")
@@ -67,8 +68,7 @@ class UFCWebsiteScraper:
 
     def scrape_ufc_rankings_to_txt_file(self):
         """
-        Scrapes the UFC rankings website to write
-        the names of fighters listed on the webpage
+        Scrapes the UFC rankings website to write the names of fighters listed on the webpage
         into a .txt file.
 
         :return: Filepath of .txt file as a string
@@ -97,50 +97,49 @@ class UFCWebsiteScraper:
 
                 if isinstance(grouping, bs4.element.Tag):
 
-                    division = grouping.find(class_="view-grouping-header").get_text()
+                    division_html = grouping.find(class_="view-grouping-header")
+                    division = division_html.get_text()
 
                     # Exclude the pound-for-pound rankings and women's featherweight
-                    if division not in ["Pound-for-Pound Top Rank", "Women's Featherweight"]:
+                    if division in ["Pound-for-Pound Top Rank", "Women's Featherweight"]:
+                        continue
 
-                        # If no command line args specfied, pull all divisions
-                        if not args["all"]:
-                            current_division = DIVISON_MAPPING[division]
-                            
-                            # Capture divisions specified in command line args
-                            if not args[current_division]:
-                                continue
-
-                        division = "".join([division + "\n"])
-                        file.write(division)
-
-                        try:
-                            # Get the division's champion's name and clean the text
-                            champion = grouping.find(class_="info")
-                            champion = champion.find(class_="views-row").get_text().strip()
-
-                            # Write the champion into file
-                            champion = "".join(["\t", champion, "\n"])
-                            file.write(champion)
+                    # If no command line args specfied, pull all divisions
+                    if not args["all"]:
+                        current_division = DIVISON_MAPPING[division]
                         
-                        except AttributeError:
-                            # There is no active champion!
-                            pass
+                        # Capture divisions specified in command line args
+                        if not args[current_division]:
+                            continue
 
-                        # Get the top 15 fighters in the current division
-                        top_15 = grouping.find_all(
-                            class_="views-field views-field-title"
-                        )
+                    file.write(division + "\n")
 
-                        for fighter in top_15:
+                    try:
+                        # Get the division's champion's name and clean the text
+                        champion_html = grouping.find(class_="info")
+                        champion_html = champion_html.find(class_="views-row")
+                        champion = champion_html.get_text().strip()
 
-                            # Get the top 15 fighter's name and clean the text
-                            contender = (
-                                fighter.find(class_="views-row").get_text().strip()
-                            )
+                        # Write the champion into file
+                        champion = "".join(["\t", champion, "\n"])
+                        file.write(champion)
+                    
+                    except AttributeError:
+                        # There is no active champion!
+                        pass
 
-                            # Write the contender into file
-                            contender = "".join(["\t", contender, "\n"])
-                            file.write(contender)
+                    # Get the top 15 fighters in the current division
+                    top_15 = grouping.find_all(class_="views-field views-field-title")
+
+                    for fighter in top_15:
+
+                        # Get the current fighter's name and clean the text
+                        fighter_name_html = fighter.find(class_="views-row")
+                        fighter_name = fighter_name_html.get_text().strip()
+
+                        # Write the fighter's name into file
+                        fighter_name = "".join(["\t", fighter_name, "\n"])
+                        file.write(fighter_name)
         
         print(f"Scraped UFC Rankings to {text_filepath}")
 
@@ -148,8 +147,7 @@ class UFCWebsiteScraper:
 
     def scrape_athlete_biography(self, soup):
         """
-        Scrapes and parses the athlete's biography
-        section from their webpage.
+        Scrapes and parses the athlete's biography section from their webpage.
 
         :param: BeautifulSoup object containing html of the UFC athlete's webpage
         :return: compiled_statistics: Dict with the scraped statistics.
@@ -174,22 +172,18 @@ class UFCWebsiteScraper:
 
                     # Clean and gather data in each entry
                     for field in bio_fields:
-                        label = (
-                            field.find(class_="c-bio__label")
-                            .get_text()
-                            .lower()
-                            .replace(" ", "_")
-                        )
-                        entry = (
-                            field.find(class_="c-bio__text")
-                            .get_text()
-                            .replace("\n", "")
-                        )
+
+                        label_html = field.find(class_="c-bio__label")
+                        label = label_html.get_text().lower().replace(" ", "_")
+
+                        entry_html = field.find(class_="c-bio__text")
+                        entry = entry_html.get_text().replace("\n", "")
+
                         compiled_statistics[label] = entry
 
         except AttributeError:
 
-            print("Athlete does not have a biography section.")
+            print("Athlete does not have a biography section")
             compiled_statistics.update(
                 {
                     "status": "",
@@ -214,15 +208,16 @@ class UFCWebsiteScraper:
         :return: The athlete's nickname as a string
         """
 
+        nickname = ""
+
         try:
 
-            nickname = soup.find(class_="field field-name-nickname").get_text()
-            nickname = nickname.replace('"', "")
+            nickname_html = soup.find(class_="field field-name-nickname")
+            nickname = nickname_html.get_text().replace('"', "")
 
         except AttributeError:
 
             print("Athlete does not have a nickname")
-            nickname = ""
 
         return nickname
 
@@ -235,19 +230,19 @@ class UFCWebsiteScraper:
         :return: The athlete's fight record as a string
         """
 
+        record = ""
+
         try:
 
-            record = soup.find(
-                class_="c-hero__headline-suffix tz-change-inner"
-            ).get_text()
+            record_html = soup.find(class_="c-hero__headline-suffix tz-change-inner")
+            record_string = record_html.get_text()
 
-            record = record.strip().split("\n")
-            record = record[-1].strip()
+            record_string = record_string.strip().split("\n")
+            record = record_string[-1].strip()
 
         except AttributeError:
 
-            print("Athlete does not have a record.")
-            record = ""
+            print("Athlete does not have a record")
 
         return record
 
@@ -260,15 +255,17 @@ class UFCWebsiteScraper:
         :return: The athlete's UFC ranking as a string
         """
 
+        ranking = ""
+
         try:
 
-            ranking = soup.find(
-                class_="c-hero__headline-suffix tz-change-inner"
-            ).get_text()
-            ranking = ranking.strip().split("\n")
+            ranking_html = soup.find(class_="c-hero__headline-suffix tz-change-inner")
+            ranking_info = ranking_html.get_text()
+            ranking_info = ranking_info.strip().split("\n")
+
             cleaned_ranking = []
 
-            for line in ranking:
+            for line in ranking_info:
                 cleaned_ranking.append(line.strip())
 
             ranking = " ".join(cleaned_ranking)
@@ -277,7 +274,6 @@ class UFCWebsiteScraper:
         except AttributeError:
 
             print("Athlete does not have a ranking")
-            ranking = ""
 
         return ranking
 
@@ -300,42 +296,32 @@ class UFCWebsiteScraper:
             # Case when there is only one athlete detail card
             if not striking_accuracy_html:
 
-                striking_accuracy_html = soup.find(
-                    class_="l-overlap-group__item--odd--full-width"
-                )
+                striking_accuracy_html = soup.find(class_="l-overlap-group__item--odd--full-width")
 
                 # If the athlete detail card is not for Striking Accuracy, then it does not exist
-                if (
-                    striking_accuracy_html.find(class_="c-overlap--stats__title")
-                    .get_text()
-                    .lower()
-                    .strip()
-                    != "striking accuracy"
-                ):
+                striking_accuracy_label_html = striking_accuracy_html.find(class_="c-overlap--stats__title")
+                striking_accuracy_label = striking_accuracy_label_html.get_text().lower().strip()
+                
+                if (striking_accuracy_label != "striking accuracy"):
                     raise AttributeError()
 
             # Gather the striking statistics
-            significant_strike_accuracy = striking_accuracy_html.find(
-                class_="e-chart-circle__percent"
-            ).get_text()
-            significant_strikes = striking_accuracy_html.find_all(
-                class_="c-overlap__stats-value"
-            )
-            significant_strikes_landed = significant_strikes[0].get_text()
-            significant_strikes_attempted = significant_strikes[1].get_text()
+            significant_strike_accuracy_html = striking_accuracy_html.find(class_="e-chart-circle__percent")
+            significant_strike_accuracy = significant_strike_accuracy_html.get_text()
+
+            significant_strikes_list = striking_accuracy_html.find_all(class_="c-overlap__stats-value")
+            significant_strikes_landed = significant_strikes_list[0].get_text()
+            significant_strikes_attempted = significant_strikes_list[1].get_text()
 
             # Insert statistics into dictionary
-            compiled_statistics["significant_strikes_landed"] = (
-                significant_strikes_landed if significant_strikes_landed else "0"
-            )
+            significant_strikes_landed = significant_strikes_landed if significant_strikes_landed else "0"
+            compiled_statistics["significant_strikes_landed"] = significant_strikes_landed
 
-            compiled_statistics["significant_strikes_attempted"] = (
-                significant_strikes_attempted if significant_strikes_attempted else "0"
-            )
+            significant_strikes_attempted = significant_strikes_attempted if significant_strikes_attempted else "0"
+            compiled_statistics["significant_strikes_attempted"] = significant_strikes_attempted
 
-            compiled_statistics["significant_strike_accuracy"] = (
-                significant_strike_accuracy if significant_strike_accuracy else "0"
-            )
+            significant_strike_accuracy = significant_strike_accuracy if significant_strike_accuracy else "0"
+            compiled_statistics["significant_strike_accuracy"] = significant_strike_accuracy
 
         except AttributeError:
 
@@ -368,44 +354,33 @@ class UFCWebsiteScraper:
 
             # Case when there is only one athlete detail card
             if not grappling_accuracy_html:
-                grappling_accuracy_html = soup.find(
-                    class_="l-overlap-group__item--odd--full-width"
-                )
+
+                grappling_accuracy_html = soup.find(class_="l-overlap-group__item--odd--full-width")
 
                 # If the athlete detail card is not for Grappling Accuracy, then it does not exist
-                if (
-                    grappling_accuracy_html.find(class_="c-overlap--stats__title")
-                    .get_text()
-                    .lower()
-                    .strip()
-                    != "grappling accuracy"
-                ):
+                grappling_accuracy_label_html = grappling_accuracy_html.find(class_="c-overlap--stats__title")
+                grappling_accuracy_label = grappling_accuracy_label_html.get_text().lower().strip()
+
+                if (grappling_accuracy_label != "grappling accuracy"):
                     raise AttributeError()
 
             # Gather the takedown statistics
-            takedown_accuracy = grappling_accuracy_html.find(
-                class_="e-chart-circle__percent"
-            ).get_text()
+            takedown_accuracy_html = grappling_accuracy_html.find(class_="e-chart-circle__percent")
+            takedown_accuracy = takedown_accuracy_html.get_text()
 
-            takedowns = grappling_accuracy_html.find_all(
-                class_="c-overlap__stats-value"
-            )
-
-            takedowns_landed = takedowns[0].get_text()
-            takedowns_attempted = takedowns[1].get_text()
+            takedowns_list = grappling_accuracy_html.find_all(class_="c-overlap__stats-value")
+            takedowns_landed = takedowns_list[0].get_text()
+            takedowns_attempted = takedowns_list[1].get_text()
 
             # Insert statistics into our dictionary
-            compiled_statistics["takedowns_landed"] = (
-                takedowns_landed if takedowns_landed else "0"
-            )
+            takedowns_landed = takedowns_landed if takedowns_landed else "0"
+            compiled_statistics["takedowns_landed"] = takedowns_landed
 
-            compiled_statistics["takedowns_attempted"] = (
-                takedowns_attempted if takedowns_attempted else "0"
-            )
+            takedowns_attempted = takedowns_attempted if takedowns_attempted else "0"
+            compiled_statistics["takedowns_attempted"] = takedowns_attempted
 
-            compiled_statistics["takedown_accuracy"] = (
-                takedown_accuracy if takedown_accuracy else "0"
-            )
+            takedown_accuracy = takedown_accuracy if takedown_accuracy else "0"
+            compiled_statistics["takedown_accuracy"] = takedown_accuracy
 
         except AttributeError:
 
@@ -434,9 +409,7 @@ class UFCWebsiteScraper:
 
         try:
 
-            fight_metric_html = soup.find(
-                class_="l-container__content--narrow stats-records__outer-container"
-            )
+            fight_metric_html = soup.find(class_="l-container__content--narrow stats-records__outer-container")
 
             # Get all the rows of metrics that have 2 columns
             metric_rows = fight_metric_html.find_all(class_="c-stats-group-2col")
@@ -453,48 +426,32 @@ class UFCWebsiteScraper:
                     for metric_column in metric_columns:
 
                         # Get the left and right section of the column
-                        metric_left_section = metric_column.find(
-                            class_="c-stat-compare__group-1"
-                        )
+                        metric_left_section = metric_column.find(class_="c-stat-compare__group-1")
 
-                        metric_right_section = metric_column.find(
-                            class_="c-stat-compare__group-2"
-                        )
+                        metric_right_section = metric_column.find(class_="c-stat-compare__group-2")
 
-                        for metric_section in [
-                            metric_left_section,
-                            metric_right_section,
-                        ]:
+                        for metric_section in [metric_left_section, metric_right_section]:
 
                             # Extract the relevant information and clean the data
-                            label = metric_section.find(
-                                class_="c-stat-compare__label"
-                            ).get_text()
-                            label = (
-                                label.lower()
-                                .replace("sig. str.", "significant strikes")
-                                .replace("avg", "average")
-                                .replace(" ", "_")
-                            )
+                            label_html = metric_section.find(class_="c-stat-compare__label")
+                            label = label_html.get_text().lower()
+                            label = label.replace("sig. str.", "significant strikes")
+                            label = label.replace("avg", "average")
+                            label = label.replace(" ", "_")
 
                             # Try to get the following stat, otherwise assign a 0
-                            stat_html = metric_section.find(
-                                class_="c-stat-compare__number"
-                            )
-                            stat = (
-                                stat_html.get_text().replace("\n", "").replace(" ", "")
-                                if stat_html
-                                else "0"
-                            )
+                            stat_html = metric_section.find(class_="c-stat-compare__number")
+
+                            if stat_html:
+                                stat = stat_html.get_text().replace("\n", "").replace(" ", "")
+                            else:
+                                stat = "0"
 
                             # Append label suffix if it exists
-                            label_suffix = metric_section.find(
-                                class_="c-stat-compare__label-suffix"
-                            )
+                            label_suffix_html = metric_section.find(class_="c-stat-compare__label-suffix")
 
-                            if label_suffix is not None:
-                                label_suffix = label_suffix.get_text()
-                                label_suffix = label_suffix.lower().replace(" ", "_")
+                            if label_suffix_html is not None:
+                                label_suffix = label_suffix_html.get_text().lower().replace(" ", "_")
                                 label = label + "_" + label_suffix
 
                             # Insert label and stat into our dictionary
@@ -515,40 +472,32 @@ class UFCWebsiteScraper:
                         metric_section = metric_column.find(class_="c-stat-body")
 
                         # Extract the relevant information and clean the data
-                        label = metric_section.find(class_="e-t5").get_text()
-                        label = (
-                            label.lower()
-                            .replace("sig. str.", "significant strikes")
-                            .replace(" ", "_")
-                        )
+                        label_html = metric_section.find(class_="e-t5")
+                        label = label_html.get_text().lower()
+                        label = label.replace("sig. str.", "significant strikes")
+                        label = label.replace(" ", "_")
 
                         # Try to get the following stats, otherwise assign a 0
-                        stat_head_html = metric_section.find(
-                            id="e-stat-body_x5F__x5F_head_value"
-                        )
-                        stat_head = (
-                            stat_head_html.get_text().replace("\n", "").replace(" ", "")
-                            if stat_head_html
-                            else "0"
-                        )
+                        stat_head_html = metric_section.find(id="e-stat-body_x5F__x5F_head_value")
 
-                        stat_body_html = metric_section.find(
-                            id="e-stat-body_x5F__x5F_body_value"
-                        )
-                        stat_body = (
-                            stat_body_html.get_text().replace("\n", "").replace(" ", "")
-                            if stat_body_html
-                            else "0"
-                        )
+                        if stat_head_html:
+                            stat_head = stat_head_html.get_text().replace("\n", "").replace(" ", "")
+                        else:
+                            stat_head = "0"
 
-                        stat_leg_html = metric_section.find(
-                            id="e-stat-body_x5F__x5F_leg_value"
-                        )
-                        stat_leg = (
-                            stat_leg_html.get_text().replace("\n", "").replace(" ", "")
-                            if stat_leg_html
-                            else "0"
-                        )
+                        stat_body_html = metric_section.find(id="e-stat-body_x5F__x5F_body_value")
+
+                        if stat_body_html:
+                            stat_body = stat_body_html.get_text().replace("\n", "").replace(" ", "")
+                        else:
+                            stat_body = "0"
+
+                        stat_leg_html = metric_section.find(id="e-stat-body_x5F__x5F_leg_value")
+                        
+                        if stat_leg_html:
+                            stat_leg = stat_leg_html.get_text().replace("\n", "").replace(" ", "")
+                        else:
+                            stat_leg = "0"
 
                         # Insert into our dictionary
                         compiled_statistics[label + "_head"] = stat_head
@@ -558,43 +507,30 @@ class UFCWebsiteScraper:
                     else:
 
                         # Extract the relevant information and clean the data
-                        label = metric_section.find(
-                            class_="c-stat-3bar__title"
-                        ).get_text()
-                        label = (
-                            label.lower()
-                            .replace("sig. str.", "significant strikes")
-                            .replace(" ", "_")
-                        )
-                        metric_entries = metric_section.find_all(
-                            class_="c-stat-3bar__group"
-                        )
+                        label_html = metric_section.find(class_="c-stat-3bar__title")
+                        label = label_html.get_text().lower()
+                        label = label.replace("sig. str.", "significant strikes")
+                        label = label.replace(" ", "_")
+
+                        metric_entries = metric_section.find_all(class_="c-stat-3bar__group")
 
                         for metric_entry in metric_entries:
 
                             if isinstance(metric_entry, bs4.element.Tag):
 
-                                label_suffix = metric_entry.find(
-                                    class_="c-stat-3bar__label"
-                                ).get_text()
-                                label_suffix = (
-                                    label_suffix.replace("KO/TKO", "knockout")
-                                    .replace("DEC", "decision")
-                                    .replace("SUB", "submission")
-                                    .lower()
-                                    .strip()
-                                )
+                                label_suffix_html = metric_entry.find(class_="c-stat-3bar__label")
+                                label_suffix = label_suffix_html.get_text()
+                                label_suffix = label_suffix.replace("KO/TKO", "knockout")
+                                label_suffix = label_suffix.replace("DEC", "decision")
+                                label_suffix = label_suffix.replace("SUB", "submission")
+                                label_suffix = label_suffix.lower().strip()
+
                                 full_label = label + "_" + label_suffix
 
                                 # Try to get the following stat, otherwise assign a 0
-                                stat_html = metric_entry.find(
-                                    class_="c-stat-3bar__value"
-                                )
-                                stat = (
-                                    stat_html.get_text().split(" ")[0]
-                                    if stat_html
-                                    else "0"
-                                )
+                                stat_html = metric_entry.find(class_="c-stat-3bar__value")
+                                
+                                stat = stat_html.get_text().split(" ")[0] if stat_html else "0"
 
                                 # Insert into our dictionary
                                 compiled_statistics[full_label] = stat
