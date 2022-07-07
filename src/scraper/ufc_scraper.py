@@ -3,6 +3,7 @@ import bs4
 import os
 import pandas as pd
 import requests
+import threading
 
 from datetime import datetime
 
@@ -50,6 +51,7 @@ class UFCWebsiteScraper():
     def __init__(self):
         self.BASE_URL = "https://www.ufc.com/athlete/"
         self.current_datetime = datetime.now().strftime("%d%m%Y%H%M%S")
+        self.current_rankings_list = []
 
     def export_to_excel(self, athlete_statistics):
         """
@@ -121,6 +123,7 @@ class UFCWebsiteScraper():
                         champion = champion_html.get_text().strip()
 
                         # Write the champion into file
+                        self.current_rankings_list.append(champion)
                         champion = "".join(["\t", champion, "\n"])
                         file.write(champion)
                     
@@ -138,6 +141,7 @@ class UFCWebsiteScraper():
                         fighter_name = fighter_name_html.get_text().strip()
 
                         # Write the fighter's name into file
+                        self.current_rankings_list.append(fighter_name)
                         fighter_name = "".join(["\t", fighter_name, "\n"])
                         file.write(fighter_name)
         
@@ -598,3 +602,52 @@ class UFCWebsiteScraper():
         print(f"Successfully scraped fighter stats for {athlete_name}!")
 
         return athlete_statistics
+
+    def scrape_athlete_stats_thread_worker(self, athlete_name, athlete_index, results):
+        """
+        Worker function for threaded scraping of athlete stats and preserving order.
+
+        :param athlete_name: String containing the athlete's name
+        :param athlete_index: Index the athlete's data will be inserted into results
+        :param results: List of dictionaries containing athlete data
+        :return: None
+        """
+
+        athlete_stats = self.scrape_athelete_stats(athlete_name.strip())
+        results[athlete_index] = athlete_stats
+
+    def threaded_scrape_athlete_stats(self, athlete_list):
+        """
+        Uses threads to collect data from UFC website.
+
+        :param athlete_list: An ordered list of athletes to be scraped
+        :return: A list of dictionaries containing athlete data in order
+        """
+
+        results = [{} for athlete in athlete_list]
+
+        num_athletes_to_be_scraped = len(athlete_list)
+        current_athlete_index = 0
+
+        while num_athletes_to_be_scraped > 0:
+            number_of_threads = min(50, num_athletes_to_be_scraped)
+
+            threads = []
+
+            for _ in range(number_of_threads):
+                athlete_name = athlete_list[current_athlete_index]
+                t = threading.Thread(target=self.scrape_athlete_stats_thread_worker,
+                                     args=(athlete_name, current_athlete_index, results))
+                t.daemon = True
+                t.start()
+                threads.append(t)
+                current_athlete_index += 1
+
+            for t in threads:
+                t.join()
+
+            num_athletes_to_be_scraped -= number_of_threads
+
+        return results
+
+
