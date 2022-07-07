@@ -2,7 +2,7 @@ import bs4
 import requests
 import pytest
 
-from scraper.ufc_scraper import UFCWebsiteScraper
+from src.scraper.ufc_scraper import UFCWebsiteScraper
 
 
 class TestUFCWebsiteScraper():

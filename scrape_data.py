@@ -1,6 +1,6 @@
 import time
 
-from scraper.ufc_scraper import UFCWebsiteScraper
+from src.scraper.ufc_scraper import UFCWebsiteScraper
 
 
 def main():
