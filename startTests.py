@@ -13,4 +13,4 @@ test_to_run = args[0]
 # unless we clear the arguments here first
 sys.argv = [sys.argv[0]]
 
-pytest.main([os.getcwd() + f"/tests/{test_to_run}.py", "-v"])
+pytest.main([os.getcwd() + f"/tests/{test_to_run}.py", "-s", "-v"])
