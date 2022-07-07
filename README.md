@@ -10,7 +10,7 @@ Install dependencies by calling
 
 Then you can use the following command
 
-        python ufc_scraper.py
+        python scrape_data.py
 
 This will first scrape the rankings websites for UFC fighters and compile it into the ufc_rankings.txt file. Then, the code will read each line of 
 ufc_rankings.txt and scrape the data from each athlete's UFC webpage. This will all be compiled and exported into an Excel file with the data:
