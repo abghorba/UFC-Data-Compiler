@@ -145,8 +145,6 @@ class UFCWebsiteScraper():
                         fighter_name = "".join(["\t", fighter_name, "\n"])
                         file.write(fighter_name)
         
-        print(f"Scraped UFC Rankings to {text_filepath}")
-
         return text_filepath
 
     def scrape_athlete_biography(self, soup):
