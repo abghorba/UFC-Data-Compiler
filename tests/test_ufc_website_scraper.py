@@ -8,6 +8,7 @@ from src.scraper.ufc_scraper import UFCWebsiteScraper
 
 scraper = UFCWebsiteScraper()
 
+
 def get_soup(athlete_name):
     """
     Helper function to get the soup object from the website's HTML.
@@ -161,9 +162,9 @@ def test_scrape_athlete_record(athlete_name, expected_record):
 @pytest.mark.parametrize(
     "athlete_name,expected_ranking",
     [
-        ("Khabib Nurmagomedov", "Former Fighter"),
-        ("Conor McGregor", "#12 Lightweight Division"),
-        ("Jon Jones", "Light Heavyweight Champion"),
+        ("Khabib Nurmagomedov", "Unranked"),
+        ("Conor McGregor", "Unranked"),
+        ("Jon Jones", "Unranked"),
         ("Andrew Ghorbani", "")
     ]
 )

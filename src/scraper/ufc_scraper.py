@@ -8,7 +8,7 @@ import threading
 from datetime import datetime
 
 
-DIVISON_MAPPING = {
+DIVISION_MAPPING = {
     "Flyweight": "flw",
     "Bantamweight": "bw",
     "Featherweight": "fw",
@@ -46,7 +46,7 @@ if not any(args.values()):
     args["all"] = True
 
 
-class UFCWebsiteScraper():
+class UFCWebsiteScraper:
 
     def __init__(self):
         self.BASE_URL = "https://www.ufc.com/athlete/"
@@ -57,8 +57,7 @@ class UFCWebsiteScraper():
         """
         Exports the compiled data into an Excel file.
 
-        :param athlete_statisitcs : Dict containing the compiled statistics of athlete data
-        :param filename: Name of the Excel file to create
+        :param athlete_statistics : Dict containing the compiled statistics of athlete data
         :return: Filepath of .xlsx file as a string
         """
 
@@ -108,7 +107,7 @@ class UFCWebsiteScraper():
 
                     # If no command line args specfied, pull all divisions
                     if not args["all"]:
-                        current_division = DIVISON_MAPPING[division]
+                        current_division = DIVISION_MAPPING[division]
                         
                         # Capture divisions specified in command line args
                         if not args[current_division]:
@@ -214,7 +213,7 @@ class UFCWebsiteScraper():
 
         try:
 
-            nickname_html = soup.find(class_="field field-name-nickname")
+            nickname_html = soup.find(class_="hero-profile__nickname")
             nickname = nickname_html.get_text().replace('"', "")
 
         except AttributeError:
@@ -236,7 +235,7 @@ class UFCWebsiteScraper():
 
         try:
 
-            record_html = soup.find(class_="c-hero__headline-suffix tz-change-inner")
+            record_html = soup.find(class_="hero-profile__division-body")
             record_string = record_html.get_text()
 
             record_string = record_string.strip().split("\n")
@@ -261,17 +260,16 @@ class UFCWebsiteScraper():
 
         try:
 
-            ranking_html = soup.find(class_="c-hero__headline-suffix tz-change-inner")
-            ranking_info = ranking_html.get_text()
-            ranking_info = ranking_info.strip().split("\n")
+            ranking_html = soup.find_all(class_="hero-profile__tag")
+            ranking_info = ranking_html[0].get_text()
+            ranking_found = False
 
-            cleaned_ranking = []
+            if '#' in ranking_info:
+                ranking_found = True
+                ranking = ranking_info.strip().split(" ")[0]
 
-            for line in ranking_info:
-                cleaned_ranking.append(line.strip())
-
-            ranking = " ".join(cleaned_ranking)
-            ranking = ranking.split("•")[0].strip()
+            if not ranking_found:
+                ranking = "Unranked"
 
         except AttributeError:
 
