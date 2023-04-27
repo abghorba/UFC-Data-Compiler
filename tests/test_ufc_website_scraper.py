@@ -1,17 +1,18 @@
-import bs4
-import requests
 import os
+
+import bs4
 import pytest
+import requests
 
 from src.scraper.ufc_scraper import UFCWebsiteScraper
 
-
 scraper = UFCWebsiteScraper()
+
 
 def get_soup(athlete_name):
     """
     Helper function to get the soup object from the website's HTML.
-    
+
     :param athlete_name: Str of the fighter's name
     :return: BeautifulSoup object
     """
@@ -94,18 +95,20 @@ andrew_bio = {
     "leg_reach": "",
 }
 
+
 @pytest.mark.parametrize(
     "athlete_name,expected_bio",
     [
         ("Khabib Nurmagomedov", khabib_bio),
         ("Conor McGregor", mcgregor_bio),
         ("Jon Jones", jones_bio),
-        ("Andrew Ghorbani", andrew_bio)],
+        ("Andrew Ghorbani", andrew_bio),
+    ],
 )
 def test_scrape_athelete_biography(athlete_name, expected_bio):
     """
     Test that scrape_athlete_biography() parses the biography section correctly.
-    
+
     :param athlete_name: Str of the fighter's name
     """
 
@@ -118,15 +121,15 @@ def test_scrape_athelete_biography(athlete_name, expected_bio):
     "athlete_name,expected_nickname",
     [
         ("Khabib Nurmagomedov", "The Eagle"),
-        ( "Conor McGregor", "The Notorious"),
-        ( "Jon Jones", "Bones"),
+        ("Conor McGregor", "The Notorious"),
+        ("Jon Jones", "Bones"),
         ("Andrew Ghorbani", ""),
-    ]
+    ],
 )
 def test_scrape_athlete_nickname(athlete_name, expected_nickname):
     """
     Test that scrape_athlete_nickname() works correctly.
-    
+
     :param athlete_name: Str of the fighter's name
     :param expected_nickname: Str of the expected nickname that should be scraped
     """
@@ -142,13 +145,13 @@ def test_scrape_athlete_nickname(athlete_name, expected_nickname):
         ("Khabib Nurmagomedov", "29-0-0 (W-L-D)"),
         ("Conor McGregor", "22-6-0 (W-L-D)"),
         ("Jon Jones", "26-1-0 (W-L-D)"),
-        ("Andrew Ghorbani", "")
+        ("Andrew Ghorbani", ""),
     ],
 )
 def test_scrape_athlete_record(athlete_name, expected_record):
     """
     Test that scrape_athlete_record() works as intended.
-    
+
     :param athlete_name: Str of the fighter's name
     :param expected_record: Str of the expected record that should be scraped
     """
@@ -164,15 +167,15 @@ def test_scrape_athlete_record(athlete_name, expected_record):
         ("Khabib Nurmagomedov", "Former Fighter"),
         ("Conor McGregor", "#12 Lightweight Division"),
         ("Jon Jones", "Light Heavyweight Champion"),
-        ("Andrew Ghorbani", "")
-    ]
+        ("Andrew Ghorbani", ""),
+    ],
 )
 def test_scrape_athlete_ranking(athlete_name, expected_ranking):
     """
     Tests that scrape_athlete_ranking() works as intended.
-    
+
     :param athlete_name: Str of the fighter's name
-    :param expected_ranking: Str of the expected ranking that should be scraped 
+    :param expected_ranking: Str of the expected ranking that should be scraped
     """
 
     soup = get_soup(athlete_name)
@@ -205,19 +208,20 @@ andrew_striking_stats = {
     "significant_strike_accuracy": "0",
 }
 
+
 @pytest.mark.parametrize(
     "athlete_name,expected_striking_stats",
     [
         ("Khabib Nurmagomedov", khabib_striking_stats),
         ("Conor McGregor", mcgregor_striking_stats),
         ("Jon Jones", jones_striking_stats),
-        ("Andrew Ghorbani", andrew_striking_stats)
-    ]
+        ("Andrew Ghorbani", andrew_striking_stats),
+    ],
 )
 def test_scrape_striking_accuracy(athlete_name, expected_striking_stats):
     """
     Tests that scrape_striking_accuracy() works as intended.
-    
+
     :param athlete_name: Str of the fighter's name
     :param expected_striking_stats: Dict of the expected striking stats that should be scraped
     """
@@ -252,22 +256,23 @@ andrew_grappling_stats = {
     "takedown_accuracy": "0",
 }
 
+
 @pytest.mark.parametrize(
     "athlete_name,expected_grappling_stats",
     [
         ("Khabib Nurmagomedov", khabib_grappling_stats),
         ("Conor McGregor", mcgregor_grappling_stats),
         ("Jon Jones", jones_grappling_stats),
-        ("Andrew Ghorbani", andrew_grappling_stats)
-    ]
+        ("Andrew Ghorbani", andrew_grappling_stats),
+    ],
 )
 def test_scrape_grappling_accuracy(athlete_name, expected_grappling_stats):
     """Tests that scrape_grappling_accuracy() works as intended.
-    
+
     :param athlete_name: Str of the fighter's name
     :param expected_grappling_stats: Dict of the expected grappling stats that should be scraped
     """
-    
+
     soup = get_soup(athlete_name)
     scraped_grappling_stats = scraper.scrape_grappling_accuracy(soup)
     assert scraped_grappling_stats == expected_grappling_stats
@@ -354,18 +359,20 @@ andrew_fight_metrics = {
     "win_by_way_submission": "0",
 }
 
+
 @pytest.mark.parametrize(
     "athlete_name,expected_fight_metrics",
     [
         ("Khabib Nurmagomedov", khabib_fight_metrics),
         ("Conor McGregor", mcgregor_fight_metrics),
         ("Jon Jones", jones_fight_metrics),
-        ("Andrew Ghorbani", andrew_fight_metrics)],
+        ("Andrew Ghorbani", andrew_fight_metrics),
+    ],
 )
 def test_scrape_fight_metrics(athlete_name, expected_fight_metrics):
     """
     Tests that scrape_fight_metrics() works as intended.
-    
+
     :param athlete_name: Str of the fighter's name
     :param expected_fight_metrics: Dict of the expected fight metrics that should be scraped
     """
@@ -530,6 +537,7 @@ andrew_stats = {
     "win_by_way_submission": "0",
 }
 
+
 @pytest.mark.parametrize(
     "athlete_name,expected_stats",
     [
@@ -537,7 +545,7 @@ andrew_stats = {
         ("Conor McGregor", mcgregor_stats),
         ("Jon Jones", jones_stats),
         ("Andrew Ghorbani", andrew_stats),
-    ]
+    ],
 )
 def test_scrape_athelete_stats(athlete_name, expected_stats):
     """
