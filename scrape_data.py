@@ -4,9 +4,8 @@ from src.scraper.ufc_scraper import UFCWebsiteScraper
 
 
 def main():
-
     start_time = time.time()
-                                  
+
     ufc_scraper = UFCWebsiteScraper()
 
     print("Scraping the UFC Rankings website . . .")
