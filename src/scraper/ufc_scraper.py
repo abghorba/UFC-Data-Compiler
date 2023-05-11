@@ -1,4 +1,3 @@
-import argparse
 import os
 import threading
 from datetime import datetime
@@ -6,6 +5,8 @@ from datetime import datetime
 import bs4
 import pandas as pd
 import requests
+
+from src.args.command_line_args import get_command_line_args
 
 DIVISION_MAPPING = {
     "Flyweight": "flw",
@@ -23,33 +24,13 @@ DIVISION_MAPPING = {
     "Pound-for-Pound": "p4p",
 }
 
-parser = argparse.ArgumentParser(description="Specify UFC divisions")
-parser.add_argument("-all", help="Pull all divisions", action="store_true")
-parser.add_argument("-flw", help="Flyweight", action="store_true")
-parser.add_argument("-bw", help="Bantamweight", action="store_true")
-parser.add_argument("-fw", help="Featherweight", action="store_true")
-parser.add_argument("-lw", help="Lightweight", action="store_true")
-parser.add_argument("-ww", help="Welterweight", action="store_true")
-parser.add_argument("-mw", help="Middleweight", action="store_true")
-parser.add_argument("-lhw", help="Light Heavyweight", action="store_true")
-parser.add_argument("-hw", help="Heavyweight", action="store_true")
-parser.add_argument("-wsw", help="Women's Strawweight", action="store_true")
-parser.add_argument("-wflw", help="Women's Flyweight", action="store_true")
-parser.add_argument("-wbw", help="Women's Bantamweight", action="store_true")
-# parser.add_argument('-wfw', help="Women's Featherweight", action="store_true")
-# parser.add_argument('-p4p', help="Pound-for-Pound", action="store_true")
-
-args = vars(parser.parse_args())
-
-if not any(args.values()):
-    args["all"] = True
-
 
 class UFCWebsiteScraper:
     def __init__(self):
         self.BASE_URL = "https://www.ufc.com/athlete/"
         self.current_datetime = datetime.now().strftime("%d%m%Y%H%M%S")
         self.current_rankings_list = []
+        self.args = get_command_line_args(verbose=True)
 
     def export_to_excel(self, athlete_statistics):
         """
@@ -98,17 +79,18 @@ class UFCWebsiteScraper:
 
                     # Exclude the pound-for-pound rankings and women's featherweight
                     if division in [
-                        "Pound-for-Pound Top Rank",
+                        "Men's Pound-for-Pound Top Rank",
+                        "Women's Pound-for-Pound Top Rank",
                         "Women's Featherweight",
                     ]:
                         continue
 
-                    # If no command line args specfied, pull all divisions
-                    if not args["all"]:
-                        current_division = DIVISION_MAPPING[division]
+                    current_division = DIVISION_MAPPING[division]
 
-                        # Capture divisions specified in command line args
-                        if not args[current_division]:
+                    # Restrict data collection to the weight divisions specified in command line args
+                    if any(self.args.values()) and not self.args["all"]:
+                        # Only capture division specified in command line args
+                        if not self.args[current_division]:
                             continue
 
                     file.write(division + "\n")
